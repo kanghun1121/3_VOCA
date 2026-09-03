@@ -9,8 +9,6 @@ import Dependencies
 struct DomainExampleApp: App {
     init() {
         prepareDependencies {
-            $0.getHomeOverviewUseCase = .liveValue
-            $0.getHeatmapDataUseCase = .liveValue
             $0.getSessionDetailUseCase = .liveValue
             $0.completeSessionUseCase = .liveValue
             $0.getWordDetailUseCase = .liveValue

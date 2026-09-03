@@ -12,5 +12,11 @@ let project = Project.makeModule(
                 .dependencies,
             ]
         )),
+        .data(tests: .init(
+            dependencies: [
+                .data,
+                .domainInterface,
+            ]
+        )),
     ]
 )
