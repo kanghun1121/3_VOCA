@@ -6,14 +6,12 @@ import Dependencies
 
 struct EndpointDetailView: View {
     enum Endpoint {
-        case homeOverview
         case sessionDetail
         case wordDetail
         case authSignIn
 
         var title: String {
             switch self {
-            case .homeOverview: "GetHomeOverviewUseCase.execute()"
             case .sessionDetail: "fetchSessionDetail(id:)"
             case .wordDetail: "fetchWordDetail(id:)"
             case .authSignIn: "signInWithApple(identityToken:)"
@@ -22,7 +20,6 @@ struct EndpointDetailView: View {
 
         var hasIdParam: Bool {
             switch self {
-            case .homeOverview: false
             case .sessionDetail, .wordDetail, .authSignIn: true
             }
         }
@@ -31,13 +28,11 @@ struct EndpointDetailView: View {
             switch self {
             case .sessionDetail, .wordDetail: "id"
             case .authSignIn: "identityToken"
-            default: "id"
             }
         }
 
         var randomId: String {
             switch self {
-            case .homeOverview: ""
             case .sessionDetail: String(Int.random(in: 1...244))
             case .wordDetail: "word_\(Int.random(in: 1...800))"
             case .authSignIn: ""
@@ -52,7 +47,6 @@ struct EndpointDetailView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
 
-    @Dependency(\.getHomeOverviewUseCase) private var getHomeOverviewUseCase
     @Dependency(\.getSessionDetailUseCase) private var getSessionDetailUseCase
     @Dependency(\.getWordDetailUseCase) private var getWordDetailUseCase
     @Dependency(\.signInWithAppleUseCase) private var signInWithAppleUseCase
@@ -139,9 +133,6 @@ struct EndpointDetailView: View {
 
         do {
             switch endpoint {
-            case .homeOverview:
-                let result = try await getHomeOverviewUseCase.execute()
-                response = dumpString(result)
             case .sessionDetail:
                 let result = try await getSessionDetailUseCase.execute(idInput)
                 response = dumpString(result)
