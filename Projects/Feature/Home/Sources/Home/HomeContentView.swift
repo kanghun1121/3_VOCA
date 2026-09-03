@@ -17,9 +17,9 @@ struct HomeContentView: View {
                 SelectedDateContextRow(
                     date: viewModel.selectedDate,
                     isToday: viewModel.isSelectedDateToday,
-                    recordCount: viewModel.dayState.recordCount
+                    recordCount: viewModel.selectedDayRecords.count
                 )
-                DayStateContent(dayState: viewModel.dayState, viewModel: viewModel)
+                DayStateContent(viewModel: viewModel)
             }
             .padding(.bottom, 40)
         }
@@ -36,25 +36,21 @@ struct HomeContentView: View {
     }
 
     private struct DayStateContent: View {
-        let dayState: HomeDayState
         let viewModel: HomeViewModel
 
         var body: some View {
-            switch dayState {
-            case .today(let records):
+            if viewModel.isSelectedDateToday {
                 VStack(spacing: 8) {
                     StudyCTACard(onTapped: viewModel.didTapCTA)
                         .padding(.horizontal, 24)
-                    RecordList(records: records, viewModel: viewModel)
+                    RecordList(records: viewModel.selectedDayRecords, viewModel: viewModel)
                 }
                 .padding(.top, 16)
-
-            case .past(let records):
-                RecordList(records: records, viewModel: viewModel)
+            } else if viewModel.selectedDayRecords.isEmpty {
+                EmptyDayView(isFuture: viewModel.isSelectedDateFuture, onGoToToday: viewModel.selectToday)
+            } else {
+                RecordList(records: viewModel.selectedDayRecords, viewModel: viewModel)
                     .padding(.top, 8)
-
-            case .empty(let isFuture):
-                EmptyDayView(isFuture: isFuture, onGoToToday: viewModel.selectToday)
             }
         }
     }
