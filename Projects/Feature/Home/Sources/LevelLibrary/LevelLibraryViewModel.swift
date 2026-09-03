@@ -9,13 +9,18 @@ import SwiftUINavigation
 @Observable
 @MainActor
 public final class LevelLibraryViewModel {
-    private(set) var state: VocabularyLibrary?
-    private(set) var isLoading: Bool = true
-    private(set) var errorMessage: String?
+    enum LevelLibraryUIState: Equatable {
+        case loading
+        case success(VocabularyLibrary)
+        case error(String)
+    }
+
+    private(set) var uiState: LevelLibraryUIState = .loading
     private(set) var expandedLevelIDs: Set<String> = []
     var destination: Destination?
+    private(set) var observationTask: Task<Void, Never>?
 
-    @ObservationIgnored @Dependency(\.getHomeOverviewUseCase) private var getHomeOverviewUseCase
+    @ObservationIgnored @Dependency(\.vocabularyLibraryRepository) private var vocabularyLibraryRepository
 
     @CasePathable
     public enum Destination {
@@ -24,18 +29,21 @@ public final class LevelLibraryViewModel {
 
     public init() {}
 
-    public func load() async {
-        isLoading = true
-        defer { isLoading = false }
-        do {
-            let library = try await getHomeOverviewUseCase.execute()
-            state = library
-            if expandedLevelIDs.isEmpty, let activeID = library.levels.first(where: { $0.status == .active })?.id {
-                expandedLevelIDs.insert(activeID)
+    public func onAppear() async {
+        guard observationTask == nil else { return }
+
+        observationTask = Task {
+            for await library in vocabularyLibraryRepository.stream() {
+                self.apply(library)
             }
-        } catch {
-            errorMessage = "레벨 정보를 불러오지 못했습니다."
         }
+    }
+
+    private func apply(_ library: VocabularyLibrary) {
+        if expandedLevelIDs.isEmpty, let activeID = library.levels.first(where: { $0.status == .active })?.id {
+            expandedLevelIDs.insert(activeID)
+        }
+        uiState = .success(library)
     }
 
     func didTapLevel(id: String) {
@@ -48,5 +56,9 @@ public final class LevelLibraryViewModel {
 
     func didTapSession(id: String) {
         destination = .session(SessionDetailViewModel(sessionID: id))
+    }
+
+    deinit {
+        observationTask?.cancel()
     }
 }

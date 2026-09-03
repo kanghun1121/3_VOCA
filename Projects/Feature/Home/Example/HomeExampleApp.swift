@@ -8,7 +8,7 @@ import Dependencies
 struct HomeExampleApp: App {
     init() {
         prepareDependencies {
-            $0.getHomeOverviewUseCase = .previewValue
+            $0.vocabularyLibraryRepository = .previewValue
         }
     }
 

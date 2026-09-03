@@ -21,7 +21,7 @@ struct RootView: View {
         $0.refreshAuthSessionUseCase = .liveValue
         $0.authSessionRepository = .liveValue
         $0.authRepository = .liveValue
-        $0.homeRepository = .liveValue
+        $0.vocabularyLibraryRepository = .liveValue
         $0.sessionRepository = .liveValue
         $0.wordRepository = .liveValue
         $0.audioRepository = .liveValue

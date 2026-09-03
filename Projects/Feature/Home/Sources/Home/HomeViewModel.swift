@@ -9,34 +9,33 @@ import SwiftUINavigation
 @Observable
 @MainActor
 public final class HomeViewModel {
-    private(set) var state: VocabularyLibrary?
-    private(set) var isLoading: Bool = true
-    private(set) var errorMessage: String?
-    private(set) var selectedDate: Date
-    private(set) var dayRecordsByDate: [Date: [DayRecord]] = [:]
-    var destination: Destination?
-    let today: Date
-
-    @ObservationIgnored @Dependency(\.getHomeOverviewUseCase) private var getHomeOverviewUseCase
-
-    private var cal: Calendar { .current }
-
-    var isSelectedDateToday: Bool { cal.isDate(selectedDate, inSameDayAs: today) }
-
-    var dayState: HomeDayState {
-        HomeDayState.resolve(
-            selectedDate: selectedDate,
-            today: today,
-            recordsByDate: dayRecordsByDate,
-            calendar: cal
-        )
+    enum HomeUIState: Equatable {
+        case loading
+        case success(VocabularyLibrary)
+        case error(String)
+        case empty
     }
-
+    
     @CasePathable
     public enum Destination {
         case session(SessionDetailViewModel)
         case levelLibrary(LevelLibraryViewModel)
     }
+    
+    var destination: Destination?
+    
+    let today: Date
+    private(set) var uiState: HomeUIState = .loading
+    private(set) var dayRecordsByDate: [Date: [DayRecord]] = [:]
+    private(set) var selectedDate: Date
+    private(set) var observationTask: Task<Void, Never>?
+
+    var isSelectedDateToday: Bool { cal.isDate(selectedDate, inSameDayAs: today) }
+    var isSelectedDateFuture: Bool { cal.startOfDay(for: selectedDate) > today }
+    var selectedDayRecords: [DayRecord] { dayRecordsByDate[cal.startOfDay(for: selectedDate)] ?? [] }
+    private var cal: Calendar { .current }
+    
+    @ObservationIgnored @Dependency(\.vocabularyLibraryRepository) private var vocabularyLibraryRepository
 
     public init(
         destination: Destination? = nil,
@@ -47,18 +46,18 @@ public final class HomeViewModel {
         self.selectedDate = today
     }
 
-    // MARK: - Home actions
+    public func onAppear() async {
+        guard observationTask == nil else { return }
 
-    public func load() async {
-        isLoading = true
-        defer { isLoading = false }
-        do {
-            let library = try await getHomeOverviewUseCase.execute()
-            state = library
-            dayRecordsByDate = library.dayRecords(calendar: cal)
-        } catch {
-            errorMessage = "홈 정보를 불러오지 못했습니다."
+        observationTask = Task {
+            for await library in vocabularyLibraryRepository.stream() {
+                self.apply(library)
+            }
         }
+    }
+    
+    public func didTapSession(id: String) {
+        destination = .session(SessionDetailViewModel(sessionID: id))
     }
 
     func didTapDate(_ date: Date) {
@@ -72,8 +71,13 @@ public final class HomeViewModel {
     func didTapCTA() {
         destination = .levelLibrary(LevelLibraryViewModel())
     }
+    
+    private func apply(_ library: VocabularyLibrary) {
+        dayRecordsByDate = library.dayRecords(calendar: cal)
+        uiState = library.levels.isEmpty ? .empty : .success(library)
+    }
 
-    public func didTapSession(id: String) {
-        destination = .session(SessionDetailViewModel(sessionID: id))
+    deinit {
+        observationTask?.cancel()
     }
 }

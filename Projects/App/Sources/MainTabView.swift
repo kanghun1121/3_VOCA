@@ -11,7 +11,6 @@ struct MainTabView: View {
         TabView {
             Tab("홈", systemImage: "house.fill") {
                 HomeView(viewModel: withDependencies {
-                    $0.getHomeOverviewUseCase = .liveValue
                     $0.getSessionDetailUseCase = .liveValue
                     $0.completeSessionUseCase = .liveValue
                     $0.getWordDetailUseCase = .liveValue

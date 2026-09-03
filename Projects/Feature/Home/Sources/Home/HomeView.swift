@@ -15,18 +15,19 @@ public struct HomeView: View {
     public var body: some View {
         NavigationStack {
             Group {
-                if let state = viewModel.state {
-                    HomeContentView(state: state, viewModel: viewModel)
-                } else if viewModel.isLoading {
+                switch viewModel.uiState {
+                case .loading:
                     HomeLoadingView()
-                } else if let message = viewModel.errorMessage {
+                case .success(let library):
+                    HomeContentView(state: library, viewModel: viewModel)
+                case .error(let message):
                     ContentUnavailableView(message, systemImage: "exclamationmark.triangle")
-                } else {
-                    HomeLoadingView()
+                case .empty:
+                    HomeEmptyView()
                 }
             }
-            .animation(.easeInOut(duration: 0.15), value: viewModel.state == nil)
-            .task { await viewModel.load() }
+            .animation(.easeInOut(duration: 0.15), value: viewModel.uiState)
+            .task { await viewModel.onAppear() }
             .navigationDestination(item: $viewModel.destination.session) { detailVM in
                 SessionDetailView(viewModel: detailVM)
             }

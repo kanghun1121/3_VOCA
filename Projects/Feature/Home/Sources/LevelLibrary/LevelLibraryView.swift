@@ -14,7 +14,10 @@ struct LevelLibraryView: View {
 
     var body: some View {
         Group {
-            if let state = viewModel.state {
+            switch viewModel.uiState {
+            case .loading:
+                HomeLoadingView()
+            case .success(let state):
                 ScrollView {
                     HomeLevelList(
                         levels: state.levels,
@@ -24,17 +27,13 @@ struct LevelLibraryView: View {
                     )
                 }
                 .background(DesignSystemAsset.background.swiftUIColor)
-            } else if viewModel.isLoading {
-                HomeLoadingView()
-            } else if let message = viewModel.errorMessage {
+            case .error(let message):
                 ContentUnavailableView(message, systemImage: "exclamationmark.triangle")
-            } else {
-                HomeLoadingView()
             }
         }
         .navigationTitle("학습 라이브러리")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await viewModel.load() }
+        .task { await viewModel.onAppear() }
         .navigationDestination(item: $viewModel.destination.session) { detailVM in
             SessionDetailView(viewModel: detailVM)
         }
