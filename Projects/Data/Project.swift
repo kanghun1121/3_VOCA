@@ -16,6 +16,7 @@ let project = Project.makeModule(
             dependencies: [
                 .data,
                 .domainInterface,
+                .networkingInterface,
             ]
         )),
     ]
