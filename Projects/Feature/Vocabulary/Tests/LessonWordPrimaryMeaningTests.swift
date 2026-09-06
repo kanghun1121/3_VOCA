@@ -3,7 +3,7 @@ import XCTest
 @testable import FeatureVocabulary
 import DomainInterface
 
-final class SessionWordPrimaryMeaningTests: XCTestCase {
+final class LessonWordPrimaryMeaningTests: XCTestCase {
     func test_정의가_있으면_첫번째_정의의_뜻을_반환한다() {
         let word = makeWord(definitions: [
             .init(id: "d1", partOfSpeech: .adjective, meaning: "모호한"),
@@ -20,8 +20,8 @@ final class SessionWordPrimaryMeaningTests: XCTestCase {
     }
 }
 
-private func makeWord(definitions: [Session.Word.Definition]) -> Session.Word {
-    Session.Word(
+private func makeWord(definitions: [Lesson.Word.Definition]) -> Lesson.Word {
+    Lesson.Word(
         id: "word_1",
         term: "ambiguous",
         pronunciation: "/æmˈbɪɡjuəs/",

@@ -4,7 +4,7 @@ import DesignSystem
 import DomainInterface
 
 struct RecordCard: View {
-    let record: Session.Record?
+    let record: LearningHistory?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -21,7 +21,7 @@ struct RecordCard: View {
 }
 
 private struct RecordCellsRow: View {
-    let record: Session.Record?
+    let record: LearningHistory?
 
     var body: some View {
         HStack(spacing: 0) {

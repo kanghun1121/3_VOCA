@@ -9,10 +9,10 @@ import SwiftUINavigation
 
 @Observable
 @MainActor
-public final class SessionDetailViewModel {
-    enum ViewState {
+public final class LessonDetailViewModel {
+    enum LessonDetailUIState: Equatable {
         case loading
-        case loaded(Session)
+        case loaded(Lesson)
         case error(String)
     }
 
@@ -22,38 +22,46 @@ public final class SessionDetailViewModel {
         case wordGame(WordGameViewModel)
     }
 
-    private(set) var viewState: ViewState = .loading
     var destination: Destination?
 
-    @ObservationIgnored @Dependency(\.getSessionDetailUseCase) private var getSessionDetailUseCase
-    @ObservationIgnored @Dependency(\.prefetchAudioUseCase) private var prefetchAudioUseCase
-    private let sessionID: String
-    private var audioPrefetchTask: Task<Void, Never>?
+    private(set) var uiState: LessonDetailUIState = .loading
+    private(set) var learningHistory: LearningHistory?
+    @ObservationIgnored private(set) var historyObservationTask: Task<Void, Never>?
+    private let lessonID: String
 
-    public init(sessionID: String) {
-        self.sessionID = sessionID
+    @ObservationIgnored @Dependency(\.loadLessonDetailUseCase) private var loadLessonDetailUseCase
+    @ObservationIgnored @Dependency(\.learningHistoryRepository) private var learningHistoryRepository
+
+    public init(lessonID: String) {
+        self.lessonID = lessonID
     }
 
-    public func load() async {
-        viewState = .loading
-        
+    public func onAppear() async {
+        guard historyObservationTask == nil else { return }
+
+        historyObservationTask = Task {
+            for await history in learningHistoryRepository.stream(lessonID) {
+                self.learningHistory = history
+            }
+        }
+
         do {
-            let session = try await getSessionDetailUseCase.execute(sessionID)
-            viewState = .loaded(session)
-            // 게임/단어장 진입 전 대기 시간을 줄이기 위해, 세션 상세 화면에 머무는 동안 미리 오디오를 캐싱해둔다.
-            let audioItems = session.words.map { ($0.term, $0.audioUrl) }
-            audioPrefetchTask = Task { await prefetchAudioUseCase.execute(audioItems) }
+            let (lesson, _) = try await loadLessonDetailUseCase.execute(lessonID)
+            uiState = .loaded(lesson)
         } catch {
-            viewState = .error("세션 정보를 불러오지 못했습니다.")
+            uiState = .error("레슨 정보를 불러오지 못했습니다.")
         }
     }
 
     public func didTapVocabularyList() {
-        destination = .vocabularyList(VocabularyListViewModel(sessionID: sessionID))
+        destination = .vocabularyList(VocabularyListViewModel(lessonID: lessonID))
     }
 
     public func didTapGame() {
-        guard let audioPrefetchTask else { return }
-        destination = .wordGame(WordGameViewModel(sessionID: sessionID, audioPrefetchTask: audioPrefetchTask))
+        destination = .wordGame(WordGameViewModel(lessonID: lessonID))
+    }
+
+    deinit {
+        historyObservationTask?.cancel()
     }
 }

@@ -6,7 +6,7 @@ public extension ModulePath {
         case chatBot = "ChatBot"
         case home = "Home"
         case login = "Login"
-        case session = "Session"
+        case lesson = "Lesson"
         case vocabulary = "Vocabulary"
         case wordGame = "WordGame"
         case myPage = "MyPage"

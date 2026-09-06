@@ -3,21 +3,22 @@ import SwiftUI
 import DesignSystem
 import DomainInterface
 
-struct SessionDetailContentView: View {
-    let state: Session
+struct LessonDetailContentView: View {
+    let state: Lesson
+    let learningHistory: LearningHistory?
     let onGameTapped: () -> Void
     let onVocabularyListTapped: () -> Void
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                SessionHeaderSection(
+                LessonHeaderSection(
                     level: state.level,
-                    sessionNumber: state.sessionNumber,
+                    lessonNumber: state.lessonNumber,
                     wordCount: state.words.count,
                     estimatedDurationMinutes: state.estimatedDurationMinutes
                 )
-                RecordCard(record: state.record)
+                RecordCard(record: learningHistory)
                 WordPreviewSection(words: state.words)
                 ActionButtonsSection(onGameTapped: onGameTapped, onVocabularyListTapped: onVocabularyListTapped)
             }

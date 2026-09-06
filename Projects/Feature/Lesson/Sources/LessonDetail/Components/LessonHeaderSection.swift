@@ -2,15 +2,15 @@ import SwiftUI
 
 import DesignSystem
 
-struct SessionHeaderSection: View {
+struct LessonHeaderSection: View {
     let level: Int
-    let sessionNumber: Int
+    let lessonNumber: Int
     let wordCount: Int
     let estimatedDurationMinutes: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("LEVEL \(level) · SESSION \(sessionNumber)")
+            Text("LEVEL \(level) · SESSION \(lessonNumber)")
                 .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 14))
                 .foregroundStyle(DesignSystemAsset.primary.swiftUIColor)
             Text("\(wordCount)개 단어")

@@ -6,7 +6,7 @@ let project = Project.makeModule(
     targets: [
         .feature(implements: .home, factory: .init(
             dependencies: [
-                .feature(implements: .session),
+                .feature(implements: .lesson),
                 .dependencies,
                 .designSystem,
                 .swiftUINavigation,
