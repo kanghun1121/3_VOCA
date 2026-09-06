@@ -46,7 +46,7 @@ public struct RecognitionGameView: View {
 // MARK: - 활성/공개 단계
 
 private struct RecognitionActivePhaseView: View {
-    let word: Session.Word
+    let word: Lesson.Word
     let isRevealing: Bool
     let countdown: Int
     let ringProgress: Double

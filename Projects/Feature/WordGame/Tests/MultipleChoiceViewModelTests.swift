@@ -9,12 +9,12 @@ import Dependencies
 @MainActor
 final class MultipleChoiceViewModelTests: XCTestCase {
     func test_정답_선택시_revealed로_전환된다() {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
             definitions: [
-                Session.Word.Definition(
+                Lesson.Word.Definition(
                     id: "d1",
                     partOfSpeech: .noun,
                     meaning: "고양이"
@@ -23,13 +23,13 @@ final class MultipleChoiceViewModelTests: XCTestCase {
             distractors: ["개", "새"],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
-            $0.prefetchAudioUseCase = .previewValue
-            $0.getAudioURLUseCase = .previewValue
-            $0.playAudioUseCase = .previewValue
-            $0.stopAudioUseCase = .previewValue
+            $0.audioRepository.url = { _ in nil }
+            $0.audioRepository.fetchURL = { _, _ in nil }
+            $0.audioPlayerRepository.play = { _ in }
+            $0.audioPlayerRepository.stop = {}
         } operation: {
             MultipleChoiceViewModel(
                 words: [word],
@@ -57,13 +57,13 @@ final class MultipleChoiceViewModelTests: XCTestCase {
             ("cup", "컵", ["접시", "그릇"]),
             ("run", "달리다", ["걷다", "서다"])
         ]
-        let words = entries.enumerated().map { index, entry -> Session.Word in
-            let sessionWord = Session.Word(
+        let words = entries.enumerated().map { index, entry -> Lesson.Word in
+            let lessonWord = Lesson.Word(
                 id: "w\(index)",
                 term: entry.term,
                 pronunciation: "",
                 definitions: [
-                    Session.Word.Definition(
+                    Lesson.Word.Definition(
                         id: "d\(index)",
                         partOfSpeech: .noun,
                         meaning: entry.meaning
@@ -72,14 +72,14 @@ final class MultipleChoiceViewModelTests: XCTestCase {
                 distractors: entry.distractors,
                 audioUrl: ""
             )
-            return sessionWord
+            return lessonWord
         }
         let vm = withDependencies {
             $0.soundClient = .previewValue
-            $0.prefetchAudioUseCase = .previewValue
-            $0.getAudioURLUseCase = .previewValue
-            $0.playAudioUseCase = .previewValue
-            $0.stopAudioUseCase = .previewValue
+            $0.audioRepository.url = { _ in nil }
+            $0.audioRepository.fetchURL = { _, _ in nil }
+            $0.audioPlayerRepository.play = { _ in }
+            $0.audioPlayerRepository.stop = {}
         } operation: {
             MultipleChoiceViewModel(
                 words: words,
@@ -121,13 +121,13 @@ final class MultipleChoiceViewModelTests: XCTestCase {
             ("dog", "개", ["고양이", "새"]),
             ("sun", "태양", ["달", "별"])
         ]
-        let words = entries.enumerated().map { index, entry -> Session.Word in
-            let sessionWord = Session.Word(
+        let words = entries.enumerated().map { index, entry -> Lesson.Word in
+            let lessonWord = Lesson.Word(
                 id: "w\(index)",
                 term: entry.term,
                 pronunciation: "",
                 definitions: [
-                    Session.Word.Definition(
+                    Lesson.Word.Definition(
                         id: "d\(index)",
                         partOfSpeech: .noun,
                         meaning: entry.meaning
@@ -136,14 +136,14 @@ final class MultipleChoiceViewModelTests: XCTestCase {
                 distractors: entry.distractors,
                 audioUrl: ""
             )
-            return sessionWord
+            return lessonWord
         }
         let vm = withDependencies {
             $0.soundClient = .previewValue
-            $0.prefetchAudioUseCase = .previewValue
-            $0.getAudioURLUseCase = .previewValue
-            $0.playAudioUseCase = .previewValue
-            $0.stopAudioUseCase = .previewValue
+            $0.audioRepository.url = { _ in nil }
+            $0.audioRepository.fetchURL = { _, _ in nil }
+            $0.audioPlayerRepository.play = { _ in }
+            $0.audioPlayerRepository.stop = {}
         } operation: {
             MultipleChoiceViewModel(
                 words: words,
@@ -164,12 +164,12 @@ final class MultipleChoiceViewModelTests: XCTestCase {
     }
 
     func test_choices가_distractors와_primaryMeaning으로_구성된다() {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
             definitions: [
-                Session.Word.Definition(
+                Lesson.Word.Definition(
                     id: "d1",
                     partOfSpeech: .noun,
                     meaning: "고양이"
@@ -178,13 +178,13 @@ final class MultipleChoiceViewModelTests: XCTestCase {
             distractors: ["개", "새"],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
-            $0.prefetchAudioUseCase = .previewValue
-            $0.getAudioURLUseCase = .previewValue
-            $0.playAudioUseCase = .previewValue
-            $0.stopAudioUseCase = .previewValue
+            $0.audioRepository.url = { _ in nil }
+            $0.audioRepository.fetchURL = { _, _ in nil }
+            $0.audioPlayerRepository.play = { _ in }
+            $0.audioPlayerRepository.stop = {}
         } operation: {
             MultipleChoiceViewModel(
                 words: [word],
@@ -199,12 +199,12 @@ final class MultipleChoiceViewModelTests: XCTestCase {
     }
 
     func test_종료버튼을_누르면_destination이_alert상태가_된다() {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
             definitions: [
-                Session.Word.Definition(
+                Lesson.Word.Definition(
                     id: "d1",
                     partOfSpeech: .noun,
                     meaning: "고양이"
@@ -213,13 +213,13 @@ final class MultipleChoiceViewModelTests: XCTestCase {
             distractors: ["개", "새"],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
-            $0.prefetchAudioUseCase = .previewValue
-            $0.getAudioURLUseCase = .previewValue
-            $0.playAudioUseCase = .previewValue
-            $0.stopAudioUseCase = .previewValue
+            $0.audioRepository.url = { _ in nil }
+            $0.audioRepository.fetchURL = { _, _ in nil }
+            $0.audioPlayerRepository.play = { _ in }
+            $0.audioPlayerRepository.stop = {}
         } operation: {
             MultipleChoiceViewModel(
                 words: [word],
@@ -237,12 +237,12 @@ final class MultipleChoiceViewModelTests: XCTestCase {
     }
 
     func test_alertButtonTapped_confirmDiscard시_onClose가_호출된다() {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
             definitions: [
-                Session.Word.Definition(
+                Lesson.Word.Definition(
                     id: "d1",
                     partOfSpeech: .noun,
                     meaning: "고양이"
@@ -251,14 +251,14 @@ final class MultipleChoiceViewModelTests: XCTestCase {
             distractors: ["개", "새"],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         var isClosed = false
         let vm = withDependencies {
             $0.soundClient = .previewValue
-            $0.prefetchAudioUseCase = .previewValue
-            $0.getAudioURLUseCase = .previewValue
-            $0.playAudioUseCase = .previewValue
-            $0.stopAudioUseCase = .previewValue
+            $0.audioRepository.url = { _ in nil }
+            $0.audioRepository.fetchURL = { _, _ in nil }
+            $0.audioPlayerRepository.play = { _ in }
+            $0.audioPlayerRepository.stop = {}
         } operation: {
             MultipleChoiceViewModel(
                 words: [word],
@@ -273,12 +273,12 @@ final class MultipleChoiceViewModelTests: XCTestCase {
     }
 
     func test_게임이_종료되면_onCompleted가_호출된다() async {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
             definitions: [
-                Session.Word.Definition(
+                Lesson.Word.Definition(
                     id: "d1",
                     partOfSpeech: .noun,
                     meaning: "고양이"
@@ -287,14 +287,14 @@ final class MultipleChoiceViewModelTests: XCTestCase {
             distractors: ["개", "새"],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         var isCompleted = false
         let vm = withDependencies {
             $0.soundClient = .previewValue
-            $0.prefetchAudioUseCase = .previewValue
-            $0.getAudioURLUseCase = .previewValue
-            $0.playAudioUseCase = .previewValue
-            $0.stopAudioUseCase = .previewValue
+            $0.audioRepository.url = { _ in nil }
+            $0.audioRepository.fetchURL = { _, _ in nil }
+            $0.audioPlayerRepository.play = { _ in }
+            $0.audioPlayerRepository.stop = {}
         } operation: {
             MultipleChoiceViewModel(
                 words: [word],

@@ -60,7 +60,7 @@ public struct SpellingGameView: View {
 // MARK: - 활성 단계
 
 private struct SpellingActivePhaseView: View {
-    let word: Session.Word
+    let word: Lesson.Word
     let slots: [SpellingViewModel.SlotState]
     let viewState: SpellingViewModel.ViewState
     let onDismiss: () -> Void

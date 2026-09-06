@@ -8,7 +8,6 @@ import SwiftUINavigation
 @Observable
 @MainActor
 public final class RecognitionViewModel {
-
     enum ViewState: Equatable {
         case loading
         case active
@@ -24,30 +23,34 @@ public final class RecognitionViewModel {
         case alert(AlertState<AlertAction>)
     }
 
+    var destination: Destination?
+
     private(set) var viewState: ViewState = .loading
-    private(set) var currentWord: Session.Word?
+    private(set) var currentWord: Lesson.Word?
     private(set) var countdown: Int = 3
     private(set) var ringProgress: Double = 1.0
     private(set) var wordIndex: Int = 0
     private(set) var totalWords: Int = 0
-    var destination: Destination?
-
-    @ObservationIgnored @Dependency(\.prefetchAudioUseCase) private var prefetchAudioUseCase
-    @ObservationIgnored @Dependency(\.getAudioURLUseCase) private var getAudioURLUseCase
-    @ObservationIgnored @Dependency(\.playAudioUseCase) private var playAudioUseCase
-    @ObservationIgnored @Dependency(\.stopAudioUseCase) private var stopAudioUseCase
-
-    private let words: [Session.Word]
+    private let words: [Lesson.Word]
     private let onCompleted: () -> Void
     private let onClose: () -> Void
-
     private var countdownTask: Task<Void, Never>?
     private var revealTask: Task<Void, Never>?
     private var audioTask: Task<Void, Never>?
     private let totalCountdown: Double = 3.0
     private var remainingSeconds: Double = 3.0
 
-    init(words: [Session.Word], onCompleted: @escaping () -> Void, onClose: @escaping () -> Void) {
+    @ObservationIgnored @Dependency(\.audioRepository) private var audioRepository
+    @ObservationIgnored @Dependency(\.audioPlayerRepository) private var audioPlayerRepository
+
+    private var pronunciationPlayer: WordPronunciationPlayer {
+        WordPronunciationPlayer(
+            audioRepository: audioRepository,
+            audioPlayerRepository: audioPlayerRepository
+        )
+    }
+
+    init(words: [Lesson.Word], onCompleted: @escaping () -> Void, onClose: @escaping () -> Void) {
         self.words = words
         self.totalWords = words.count
         self.onCompleted = onCompleted
@@ -83,7 +86,7 @@ public final class RecognitionViewModel {
         case .confirmDiscard:
             revealTask?.cancel()
             audioTask?.cancel()
-            stopAudioUseCase.execute()
+            audioPlayerRepository.stop()
             onClose()
         case .none:
             startCountdown(remaining: remainingSeconds)
@@ -113,18 +116,13 @@ public final class RecognitionViewModel {
         audioTask?.cancel()
         audioTask = Task { [weak self] in
             guard let self else { return }
-            if await getAudioURLUseCase.execute(word.term) == nil {
-                await prefetchAudioUseCase.execute([(term: word.term, audioUrl: word.audioUrl)])
-            }
-            guard let url = await getAudioURLUseCase.execute(word.term) else { return }
-            guard !Task.isCancelled else { return }
-            await playAudioUseCase.execute(url)
+            await pronunciationPlayer.play(term: word.term, audioUrl: word.audioUrl)
         }
 
         startCountdown()
     }
 
-    private func setCurrentWord(at index: Int) -> Session.Word {
+    private func setCurrentWord(at index: Int) -> Lesson.Word {
         let word = words[index]
         wordIndex = index
         currentWord = word

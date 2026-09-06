@@ -4,7 +4,7 @@ import DesignSystem
 import DomainInterface
 
 struct RecognitionView: View {
-    let word: Session.Word
+    let word: Lesson.Word
     let countdown: Int
     let ringProgress: Double
     let isRevealing: Bool
@@ -38,7 +38,7 @@ struct RecognitionView: View {
 // 두 상태 간 단어(WordBlock)의 수직 위치를 일정하게 고정한다.
 
 private struct RecognitionCenterContent: View {
-    let word: Session.Word
+    let word: Lesson.Word
     let countdown: Int
     let ringProgress: Double
     let isRevealing: Bool
@@ -80,7 +80,7 @@ private struct RecognitionCenterContent: View {
 // MARK: - 공통 컴포넌트
 
 private struct RecognitionWordBlock: View {
-    let word: Session.Word
+    let word: Lesson.Word
 
     var body: some View {
         VStack(spacing: 0) {

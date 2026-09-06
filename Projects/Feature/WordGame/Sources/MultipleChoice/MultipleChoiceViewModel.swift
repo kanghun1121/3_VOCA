@@ -8,7 +8,6 @@ import SwiftUINavigation
 @Observable
 @MainActor
 public final class MultipleChoiceViewModel {
-
     enum ViewState: Equatable {
         case active
         case revealed(selected: String)
@@ -23,31 +22,35 @@ public final class MultipleChoiceViewModel {
         case alert(AlertState<AlertAction>)
     }
 
+    var destination: Destination?
+
     private(set) var viewState: ViewState = .active
-    private(set) var currentWord: Session.Word?
+    private(set) var currentWord: Lesson.Word?
     private(set) var choices: [String] = []
     private(set) var wordIndex: Int = 0
     private(set) var totalWords: Int = 0
-    private(set) var isReviewRound: Bool = false
-    var destination: Destination?
-
-    private let words: [Session.Word]
+    private(set) var advanceTask: Task<Void, Never>?
+    private var audioTask: Task<Void, Never>?
+    private var reviewTracker = ReviewRoundTracker()
+    var isReviewRound: Bool { reviewTracker.isReviewRound }
+    private let words: [Lesson.Word]
     private let onCompleted: () -> Void
     private let onClose: () -> Void
     private let clock: any Clock<Duration>
 
-    private var reviewWords: [Session.Word] = []
-    private var incorrectWordIDs: Set<String> = []
-    private(set) var advanceTask: Task<Void, Never>?
-    private var audioTask: Task<Void, Never>?
     @ObservationIgnored @Dependency(\.soundClient) private var soundClient
-    @ObservationIgnored @Dependency(\.prefetchAudioUseCase) private var prefetchAudioUseCase
-    @ObservationIgnored @Dependency(\.getAudioURLUseCase) private var getAudioURLUseCase
-    @ObservationIgnored @Dependency(\.playAudioUseCase) private var playAudioUseCase
-    @ObservationIgnored @Dependency(\.stopAudioUseCase) private var stopAudioUseCase
+    @ObservationIgnored @Dependency(\.audioRepository) private var audioRepository
+    @ObservationIgnored @Dependency(\.audioPlayerRepository) private var audioPlayerRepository
+
+    private var pronunciationPlayer: WordPronunciationPlayer {
+        WordPronunciationPlayer(
+            audioRepository: audioRepository,
+            audioPlayerRepository: audioPlayerRepository
+        )
+    }
 
     init(
-        words: [Session.Word],
+        words: [Lesson.Word],
         onCompleted: @escaping () -> Void,
         onClose: @escaping () -> Void,
         clock: any Clock<Duration> = ContinuousClock()
@@ -81,7 +84,7 @@ public final class MultipleChoiceViewModel {
         case .confirmDiscard:
             advanceTask?.cancel()
             audioTask?.cancel()
-            stopAudioUseCase.execute()
+            audioPlayerRepository.stop()
             onClose()
         case .none:
             break
@@ -97,10 +100,7 @@ public final class MultipleChoiceViewModel {
             soundClient.playCorrect()
         } else {
             soundClient.playWrong()
-            if shouldAddToReview(word) {
-                incorrectWordIDs.insert(word.id)
-                reviewWords.append(word)
-            }
+            reviewTracker.registerIncorrect(word)
         }
 
         viewState = .revealed(selected: choice)
@@ -114,7 +114,7 @@ public final class MultipleChoiceViewModel {
     }
 
     private func showWord(at index: Int) {
-        let currentWords = isReviewRound ? reviewWords : words
+        let currentWords = reviewTracker.currentWords(mainWords: words)
         guard index < currentWords.count else {
             finishRound()
             return
@@ -129,29 +129,18 @@ public final class MultipleChoiceViewModel {
         audioTask?.cancel()
         audioTask = Task { [weak self] in
             guard let self else { return }
-            if await getAudioURLUseCase.execute(word.term) == nil {
-                await prefetchAudioUseCase.execute([(term: word.term, audioUrl: word.audioUrl)])
-            }
-            guard let url = await getAudioURLUseCase.execute(word.term) else { return }
-            guard !Task.isCancelled else { return }
-            await playAudioUseCase.execute(url)
+            await pronunciationPlayer.play(term: word.term, audioUrl: word.audioUrl)
         }
     }
 
-    private func makeChoices(for word: Session.Word) -> [String] {
+    private func makeChoices(for word: Lesson.Word) -> [String] {
         (word.distractors + [word.primaryMeaning]).shuffled()
-    }
-
-    /// 메인 라운드에서 처음 틀린 단어인지 확인한다.
-    private func shouldAddToReview(_ word: Session.Word) -> Bool {
-        !isReviewRound && !incorrectWordIDs.contains(word.id)
     }
 
     /// 메인 라운드 종료 시 오답이 있으면 복습 라운드를 시작하고, 없으면 완료 처리한다.
     private func finishRound() {
-        if !isReviewRound && !reviewWords.isEmpty {
-            isReviewRound = true
-            totalWords = reviewWords.count
+        if reviewTracker.startReviewRoundIfNeeded() {
+            totalWords = reviewTracker.currentWords(mainWords: words).count
             showWord(at: 0)
         } else {
             onCompleted()
