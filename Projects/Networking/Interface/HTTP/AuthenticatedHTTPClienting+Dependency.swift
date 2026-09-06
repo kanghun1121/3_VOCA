@@ -26,4 +26,8 @@ private struct NoopAuthenticatedHTTPClient: HTTPClienting {
     func request(_ requestable: any Requestable) async throws {
         throw NetworkError.invalidRequest
     }
+
+    func data(from url: URL) async throws -> Data {
+        throw NetworkError.invalidRequest
+    }
 }
