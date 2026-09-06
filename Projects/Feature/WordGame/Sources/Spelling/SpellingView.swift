@@ -4,7 +4,7 @@ import DesignSystem
 import DomainInterface
 
 struct SpellingView: View {
-    let word: Session.Word
+    let word: Lesson.Word
     let slots: [SpellingViewModel.SlotState]
     let viewState: SpellingViewModel.ViewState
     let onSkip: () -> Void

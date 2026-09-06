@@ -4,7 +4,7 @@ import DesignSystem
 import DomainInterface
 
 struct MultipleChoiceWordHeader: View {
-    let word: Session.Word
+    let word: Lesson.Word
 
     var body: some View {
         VStack(spacing: 10) {

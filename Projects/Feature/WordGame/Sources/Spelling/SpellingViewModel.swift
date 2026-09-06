@@ -8,7 +8,6 @@ import SwiftUINavigation
 @Observable
 @MainActor
 public final class SpellingViewModel {
-
     enum ViewState: Equatable {
         case active
         case correct
@@ -32,35 +31,32 @@ public final class SpellingViewModel {
         case alert(AlertState<AlertAction>)
     }
 
-    private(set) var viewState: ViewState = .active
-    private(set) var currentWord: Session.Word?
-    private(set) var wordIndex: Int = 0
-    private(set) var totalWords: Int = 0
-    private(set) var isReviewRound: Bool = false
     var destination: Destination?
 
-    private let words: [Session.Word]
+    private(set) var viewState: ViewState = .active
+    private(set) var currentWord: Lesson.Word?
+    private(set) var wordIndex: Int = 0
+    private(set) var totalWords: Int = 0
+    private let words: [Lesson.Word]
     private let onCompleted: () -> Void
     private let onClose: () -> Void
     private let clock: any Clock<Duration>
-
-    private var reviewWords: [Session.Word] = []
-    private var incorrectWordIDs: Set<String> = []
+    private var reviewTracker = ReviewRoundTracker()
+    var isReviewRound: Bool { reviewTracker.isReviewRound }
     private(set) var advanceTask: Task<Void, Never>?
-
-    @ObservationIgnored @Dependency(\.soundClient) private var soundClient
+    var inputText: String = "" {
+        didSet { handleInputChange() }
+    }
 
     var slots: [SlotState] {
         guard let word = currentWord else { return [] }
         return word.term.enumerated().map { index, char in makeSlot(at: index, char: char) }
     }
-    
-    var inputText: String = "" {
-        didSet { handleInputChange() }
-    }
+
+    @ObservationIgnored @Dependency(\.soundClient) private var soundClient
 
     init(
-        words: [Session.Word],
+        words: [Lesson.Word],
         onCompleted: @escaping () -> Void,
         onClose: @escaping () -> Void,
         clock: any Clock<Duration> = ContinuousClock()
@@ -93,10 +89,7 @@ public final class SpellingViewModel {
         guard viewState == .active, let word = currentWord else { return }
         soundClient.playWrong()
         viewState = .revealing
-        if shouldAddToReview(word) {
-            incorrectWordIDs.insert(word.id)
-            reviewWords.append(word)
-        }
+        reviewTracker.registerIncorrect(word)
         advanceTask = Task { [weak self] in
             guard let self else { return }
             try? await self.clock.sleep(for: .seconds(1))
@@ -123,7 +116,7 @@ public final class SpellingViewModel {
         var filtered = String(inputText.filter { $0.isLetter }.prefix(limit).lowercased())
 
         // 복습 라운드: 첫 글자 힌트가 삭제되지 않도록 고정
-        if isReviewRound, let firstChar = currentWord?.term.first {
+        if reviewTracker.isReviewRound, let firstChar = currentWord?.term.first {
             let hint = String(firstChar).lowercased()
             if !filtered.hasPrefix(hint) { filtered = hint }
         }
@@ -132,7 +125,7 @@ public final class SpellingViewModel {
             inputText = filtered
             return
         }
-        
+
         if inputText.count == limit { validateAnswer() }
     }
 
@@ -155,11 +148,8 @@ public final class SpellingViewModel {
             soundClient.playWrong()
             viewState = .revealing
 
-            if shouldAddToReview(word) {
-                incorrectWordIDs.insert(word.id)
-                reviewWords.append(word)
-            }
-            
+            reviewTracker.registerIncorrect(word)
+
             advanceTask = Task { [weak self] in
                 guard let self else { return }
                 try? await self.clock.sleep(for: .seconds(1))
@@ -171,7 +161,7 @@ public final class SpellingViewModel {
 
     /// 지정 인덱스의 단어를 표시한다. 라운드 종료 시 handleRoundEnd()를 호출한다.
     private func showWord(at index: Int) {
-        let currentWords = isReviewRound ? reviewWords : words
+        let currentWords = reviewTracker.currentWords(mainWords: words)
         guard index < currentWords.count else {
             handleRoundEnd()
             return
@@ -184,19 +174,14 @@ public final class SpellingViewModel {
         currentWord = word
         viewState = .active
     }
-    
-    private func isCorrectAnswer(for word: Session.Word) -> Bool {
+
+    private func isCorrectAnswer(for word: Lesson.Word) -> Bool {
         inputText == word.term.lowercased()
     }
 
-    /// 메인 라운드에서 처음 틀린 단어인지 확인한다.
-    private func shouldAddToReview(_ word: Session.Word) -> Bool {
-        !isReviewRound && !incorrectWordIDs.contains(word.id)
-    }
-
     /// 복습 라운드면 첫 글자를 힌트로 채우고, 아니면 빈 문자열로 초기화한다.
-    private func resetInput(for word: Session.Word) {
-        if isReviewRound, let firstChar = word.term.first {
+    private func resetInput(for word: Lesson.Word) {
+        if reviewTracker.isReviewRound, let firstChar = word.term.first {
             inputText = String(firstChar).lowercased()
         } else {
             inputText = ""
@@ -205,9 +190,8 @@ public final class SpellingViewModel {
 
     /// 메인 라운드 종료 시 오답이 있으면 복습 라운드를 시작하고, 없으면 완료 처리한다.
     private func handleRoundEnd() {
-        if !isReviewRound && !reviewWords.isEmpty {
-            isReviewRound = true
-            totalWords = reviewWords.count
+        if reviewTracker.startReviewRoundIfNeeded() {
+            totalWords = reviewTracker.currentWords(mainWords: words).count
             showWord(at: 0)
         } else {
             onCompleted()
@@ -217,7 +201,7 @@ public final class SpellingViewModel {
     /// 인덱스와 현재 inputText를 기반으로 슬롯 상태를 결정한다.
     /// 복습 라운드의 첫 번째 슬롯은 항상 힌트로 반환한다.
     private func makeSlot(at index: Int, char: Character) -> SlotState {
-        guard !isReviewRound || index != 0 else {
+        guard !reviewTracker.isReviewRound || index != 0 else {
             return .hint(char.lowercased().first ?? char)
         }
 

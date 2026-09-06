@@ -9,7 +9,7 @@ import Dependencies
 @MainActor
 final class RecognitionViewModelTests: XCTestCase {
     func test_closeButton을_누르면_destination이_alert로_바뀌고_countdownTask가_취소된다() async {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
@@ -17,12 +17,12 @@ final class RecognitionViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
-            $0.prefetchAudioUseCase = .previewValue
-            $0.getAudioURLUseCase = .previewValue
-            $0.playAudioUseCase = .previewValue
-            $0.stopAudioUseCase = .previewValue
+            $0.audioRepository.url = { _ in nil }
+            $0.audioRepository.fetchURL = { _, _ in nil }
+            $0.audioPlayerRepository.play = { _ in }
+            $0.audioPlayerRepository.stop = {}
         } operation: {
             RecognitionViewModel(
                 words: [word],

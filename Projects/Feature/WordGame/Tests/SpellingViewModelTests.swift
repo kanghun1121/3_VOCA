@@ -9,7 +9,7 @@ import Dependencies
 @MainActor
 final class SpellingViewModelTests: XCTestCase {
     func test_복습라운드에서_첫글자가_힌트로_채워진다() async {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
@@ -17,7 +17,7 @@ final class SpellingViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
         } operation: {
@@ -40,8 +40,8 @@ final class SpellingViewModelTests: XCTestCase {
 
     func test_5개중_3개_오답_2개_정답이면_복습라운드에_오답3개가_순서대로_들어간다() async {
         let terms = ["cat", "dog", "sun", "cup", "run"]
-        let words = terms.enumerated().map { index, term -> Session.Word in
-            let sessionWord = Session.Word(
+        let words = terms.enumerated().map { index, term -> Lesson.Word in
+            let lessonWord = Lesson.Word(
                 id: "w\(index)",
                 term: term,
                 pronunciation: "",
@@ -49,7 +49,7 @@ final class SpellingViewModelTests: XCTestCase {
                 distractors: [],
                 audioUrl: ""
             )
-            return sessionWord
+            return lessonWord
         }
         let vm = withDependencies {
             $0.soundClient = .previewValue
@@ -90,8 +90,8 @@ final class SpellingViewModelTests: XCTestCase {
 
     func test_메인라운드에서_스킵버튼을_모두_누르면_전부_복습배열에_들어간다() async {
         let terms = ["cat", "dog", "sun"]
-        let words = terms.enumerated().map { index, term -> Session.Word in
-            let sessionWord = Session.Word(
+        let words = terms.enumerated().map { index, term -> Lesson.Word in
+            let lessonWord = Lesson.Word(
                 id: "w\(index)",
                 term: term,
                 pronunciation: "",
@@ -99,7 +99,7 @@ final class SpellingViewModelTests: XCTestCase {
                 distractors: [],
                 audioUrl: ""
             )
-            return sessionWord
+            return lessonWord
         }
         let vm = withDependencies {
             $0.soundClient = .previewValue
@@ -123,7 +123,7 @@ final class SpellingViewModelTests: XCTestCase {
     }
 
     func test_대문자를_입력해도_소문자로_비교되어_정답처리된다() {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
@@ -131,7 +131,7 @@ final class SpellingViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
         } operation: {
@@ -149,7 +149,7 @@ final class SpellingViewModelTests: XCTestCase {
     }
 
     func test_종료버튼을_누르면_destination이_alert상태가_된다() {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
@@ -157,7 +157,7 @@ final class SpellingViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
         } operation: {
@@ -177,7 +177,7 @@ final class SpellingViewModelTests: XCTestCase {
     }
 
     func test_리뷰라운드일때_SlotState가_hint_cursor_empty이다() async {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
@@ -185,7 +185,7 @@ final class SpellingViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
         } operation: {
@@ -205,7 +205,7 @@ final class SpellingViewModelTests: XCTestCase {
     }
 
     func test_일반라운드일때_SlotState가_cursor_empty_empty이다() {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
@@ -213,7 +213,7 @@ final class SpellingViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
         } operation: {
@@ -230,7 +230,7 @@ final class SpellingViewModelTests: XCTestCase {
     }
 
     func test_5글자중_4글자입력시_복습라운드에서_hint_filled_filled_filled_cursor이다() async {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "apple",
             pronunciation: "",
@@ -238,7 +238,7 @@ final class SpellingViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         let vm = withDependencies {
             $0.soundClient = .previewValue
         } operation: {
@@ -263,7 +263,7 @@ final class SpellingViewModelTests: XCTestCase {
     }
 
     func test_게임이_종료되면_onCompleted가_호출된다() async {
-        let sessionWord = Session.Word(
+        let lessonWord = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
@@ -271,7 +271,7 @@ final class SpellingViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let word = sessionWord
+        let word = lessonWord
         var isCompleted = false
         let vm = withDependencies {
             $0.soundClient = .previewValue
