@@ -4,22 +4,26 @@ import Dependencies
 
 /// 단어 발음 mp3 리소스를 추상화한 포트. 실제 구현은 Data 모듈에서 제공한다.
 public struct AudioRepository: Sendable {
-    public var prefetchAudio: @Sendable (_ words: [(term: String, audioUrl: String)]) async -> Void
-    public var audioURL: @Sendable (_ term: String) async -> URL?
+    public var prefetch: @Sendable (_ words: [(term: String, audioUrl: String)]) async -> Void
+    public var fetchURL: @Sendable (_ term: String, _ audioUrl: String) async -> URL?
+    public var url: @Sendable (_ term: String) async -> URL?
 
     public init(
-        prefetchAudio: @escaping @Sendable (_ words: [(term: String, audioUrl: String)]) async -> Void,
-        audioURL: @escaping @Sendable (_ term: String) async -> URL?
+        prefetch: @escaping @Sendable (_ words: [(term: String, audioUrl: String)]) async -> Void,
+        fetchURL: @escaping @Sendable (_ term: String, _ audioUrl: String) async -> URL?,
+        url: @escaping @Sendable (_ term: String) async -> URL?
     ) {
-        self.prefetchAudio = prefetchAudio
-        self.audioURL = audioURL
+        self.prefetch = prefetch
+        self.fetchURL = fetchURL
+        self.url = url
     }
 }
 
 extension AudioRepository: TestDependencyKey {
     public static let testValue = AudioRepository(
-        prefetchAudio: unimplemented("\(Self.self).prefetchAudio", placeholder: ()),
-        audioURL: unimplemented("\(Self.self).audioURL", placeholder: nil)
+        prefetch: unimplemented("\(Self.self).prefetch", placeholder: ()),
+        fetchURL: unimplemented("\(Self.self).fetchURL", placeholder: nil),
+        url: unimplemented("\(Self.self).url", placeholder: nil)
     )
 }
 

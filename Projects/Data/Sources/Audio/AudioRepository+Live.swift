@@ -1,42 +1,59 @@
 import Foundation
 
 import DomainInterface
+import NetworkingInterface
 
 import Dependencies
 
 extension AudioRepository: DependencyKey {
-    public static let liveValue: AudioRepository = {
-        let cache = AudioCache()
-        return AudioRepository(
-            prefetchAudio: { words in
-                await withTaskGroup(of: Void.self) { group in
-                    for (term, audioUrlString) in words {
-                        group.addTask {
-                            guard await cache.fetch(term) == nil else { return }
-                            guard let remoteURL = URL(string: audioUrlString) else { return }
-                            // MP3를 임시 디렉토리에 미리 다운로드해두어
-                            // 재생 버튼 탭 시 AVPlayer가 네트워크 요청 없이 즉시 재생할 수 있게 한다.
-                            guard let localURL = await downloadMP3(from: remoteURL, term: term) else { return }
-                            await cache.set(term, localURL)
+    public static let liveValue = AudioRepository(
+        prefetch: { words in
+            @Dependency(\.audioMemoryCache) var memory
+            @Dependency(\.audioDiskCache) var disk
+            @Dependency(\.httpClient) var httpClient
+            let remote = AudioRemoteSource(httpClient: httpClient)
+
+            await withTaskGroup(of: Void.self) { group in
+                for (term, audioUrlString) in words {
+                    group.addTask {
+                        if await memory.url(for: term) != nil { return }
+                        if let diskURL = disk.url(for: term) {
+                            await memory.markReady(term, url: diskURL)
+                            return
                         }
+                        guard let remoteURL = URL(string: audioUrlString) else { return }
+                        guard let data = try? await remote.download(from: remoteURL) else { return }
+                        guard let fileURL = try? disk.store(data, for: term) else { return }
+                        await memory.markReady(term, url: fileURL)
                     }
                 }
-            },
-            audioURL: { term in
-                await cache.fetch(term)
             }
-        )
-    }()
-}
+        },
+        fetchURL: { term, audioUrlString in
+            @Dependency(\.audioMemoryCache) var memory
+            @Dependency(\.audioDiskCache) var disk
+            @Dependency(\.httpClient) var httpClient
+            let remote = AudioRemoteSource(httpClient: httpClient)
 
-private extension AudioRepository {
-    // 앱 재시작 전까지 유효한 임시 디렉토리에 저장한다.
-    // AVPlayer는 URLCache를 사용하지 않으므로 file:// URL을 직접 전달해야 즉시 재생된다.
-    static func downloadMP3(from url: URL, term: String) async -> URL? {
-        guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
-        let fileURL = URL.temporaryDirectory
-            .appending(path: "\(term).mp3")
-        try? data.write(to: fileURL, options: .atomic)
-        return fileURL
-    }
+            if let cached = await memory.url(for: term) { return cached }
+            if let diskURL = disk.url(for: term) {
+                await memory.markReady(term, url: diskURL)
+                return diskURL
+            }
+            guard let remoteURL = URL(string: audioUrlString) else { return nil }
+            guard let data = try? await remote.download(from: remoteURL) else { return nil }
+            guard let fileURL = try? disk.store(data, for: term) else { return nil }
+            await memory.markReady(term, url: fileURL)
+            return fileURL
+        },
+        url: { term in
+            @Dependency(\.audioMemoryCache) var memory
+            @Dependency(\.audioDiskCache) var disk
+
+            if let cached = await memory.url(for: term) { return cached }
+            guard let diskURL = disk.url(for: term) else { return nil }
+            await memory.markReady(term, url: diskURL)
+            return diskURL
+        }
+    )
 }

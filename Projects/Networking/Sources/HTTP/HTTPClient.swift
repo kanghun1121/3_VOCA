@@ -38,6 +38,29 @@ public struct HTTPClient<Interceptor: HTTPInterceptor>: HTTPClienting {
         _ = data
     }
 
+    public func data(from url: URL) async throws -> Data {
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = HTTPMethod.get.rawValue
+
+        logger.logRequest(urlRequest)
+
+        let data: Data
+        let response: URLResponse
+        
+        do {
+            (data, response) = try await session.data(for: urlRequest)
+        } catch {
+            logger.logError(error, context: url.absoluteString)
+            throw NetworkError.requestFailed(error)
+        }
+
+        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+        logger.logResponse(response, statusCode: statusCode, data: data)
+        try validate(response, data: data)
+
+        return data
+    }
+
     private func perform(_ requestable: any Requestable) async throws -> (Data, URLResponse) {
         let (data, response) = try await execute(requestable)
 
