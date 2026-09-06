@@ -19,9 +19,9 @@ final class LevelLibraryViewModelTests: XCTestCase {
 
     func test_onAppear_성공시_uiState가_success로_채워지고_활성_레벨이_최초_펼쳐진다() async {
         let library = makeLibrary(levels: [
-            makeLevel(id: "level_1", completedSessions: 5, totalSessions: 5), // completed
-            makeLevel(id: "level_2", completedSessions: 2, totalSessions: 5), // active
-            makeLevel(id: "level_3", completedSessions: 0, totalSessions: 5), // notStarted
+            makeLevel(id: "level_1", completedLessons: 5, totalLessons: 5), // completed
+            makeLevel(id: "level_2", completedLessons: 2, totalLessons: 5), // active
+            makeLevel(id: "level_3", completedLessons: 0, totalLessons: 5), // notStarted
         ])
         let vm = withDependencies {
             $0.vocabularyLibraryRepository.stream = { makeStream([library]) }
@@ -38,7 +38,7 @@ final class LevelLibraryViewModelTests: XCTestCase {
 
     func test_이미_펼친_레벨이_있으면_활성_레벨_자동_삽입을_하지_않는다() async {
         let library = makeLibrary(levels: [
-            makeLevel(id: "level_1", completedSessions: 2, totalSessions: 5), // active
+            makeLevel(id: "level_1", completedLessons: 2, totalLessons: 5), // active
         ])
         let vm = withDependencies {
             $0.vocabularyLibraryRepository.stream = { makeStream([library]) }
@@ -87,10 +87,10 @@ final class LevelLibraryViewModelTests: XCTestCase {
 
     func test_스트림이_값을_2번_주면_최신_값으로_갱신되고_expandedLevelIDs는_유지된다() async {
         let first = makeLibrary(levels: [
-            makeLevel(id: "level_1", completedSessions: 2, totalSessions: 5), // active
+            makeLevel(id: "level_1", completedLessons: 2, totalLessons: 5), // active
         ])
         let second = makeLibrary(levels: [
-            makeLevel(id: "level_2", completedSessions: 3, totalSessions: 5), // active
+            makeLevel(id: "level_2", completedLessons: 3, totalLessons: 5), // active
         ])
         let vm = withDependencies {
             $0.vocabularyLibraryRepository.stream = { makeStream([first, second]) }
@@ -125,16 +125,16 @@ private func makeLibrary(levels: [LevelSummary]) -> VocabularyLibrary {
 
 private func makeLevel(
     id: String,
-    completedSessions: Int,
-    totalSessions: Int
+    completedLessons: Int,
+    totalLessons: Int
 ) -> LevelSummary {
     LevelSummary(
         id: id,
         level: 1,
         name: "Level",
         difficulty: "A1",
-        totalSessions: totalSessions,
-        completedSessions: completedSessions,
-        sessions: []
+        totalLessons: totalLessons,
+        completedLessons: completedLessons,
+        lessons: []
     )
 }

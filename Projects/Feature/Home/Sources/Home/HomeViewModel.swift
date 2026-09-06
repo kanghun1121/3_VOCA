@@ -1,7 +1,7 @@
 import Foundation
 
 import DomainInterface
-import FeatureSession
+import FeatureLesson
 
 import Dependencies
 import SwiftUINavigation
@@ -18,7 +18,7 @@ public final class HomeViewModel {
     
     @CasePathable
     public enum Destination {
-        case session(SessionDetailViewModel)
+        case lesson(LessonDetailViewModel)
         case levelLibrary(LevelLibraryViewModel)
     }
     
@@ -28,7 +28,7 @@ public final class HomeViewModel {
     private(set) var uiState: HomeUIState = .loading
     private(set) var dayRecordsByDate: [Date: [DayRecord]] = [:]
     private(set) var selectedDate: Date
-    private(set) var observationTask: Task<Void, Never>?
+    @ObservationIgnored private(set) var observationTask: Task<Void, Never>?
 
     var isSelectedDateToday: Bool { cal.isDate(selectedDate, inSameDayAs: today) }
     var isSelectedDateFuture: Bool { cal.startOfDay(for: selectedDate) > today }
@@ -56,8 +56,8 @@ public final class HomeViewModel {
         }
     }
     
-    public func didTapSession(id: String) {
-        destination = .session(SessionDetailViewModel(sessionID: id))
+    public func didTapLesson(id: String) {
+        destination = .lesson(LessonDetailViewModel(lessonID: id))
     }
 
     func didTapDate(_ date: Date) {

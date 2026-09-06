@@ -7,7 +7,7 @@ struct LevelCard: View {
     let level: LevelSummary
     let isExpanded: Bool
     let action: () -> Void
-    let onSessionTapped: (String) -> Void
+    let onLessonTapped: (String) -> Void
 
     private var isActive: Bool { level.status == .active }
 
@@ -18,15 +18,15 @@ struct LevelCard: View {
                     level: level.level,
                     name: level.name,
                     status: level.status,
-                    completedSessions: level.completedSessions,
-                    totalSessions: level.totalSessions,
+                    completedLessons: level.completedLessons,
+                    totalLessons: level.totalLessons,
                     isExpanded: isExpanded
                 )
             }
             .buttonStyle(.plain)
             LevelProgressBar(progressRatio: level.progressRatio, status: level.status)
             if isExpanded {
-                SessionGrid(sessions: level.sessions, onSessionTapped: onSessionTapped)
+                LessonGrid(lessons: level.lessons, onLessonTapped: onLessonTapped)
                     .padding(16)
             }
         }

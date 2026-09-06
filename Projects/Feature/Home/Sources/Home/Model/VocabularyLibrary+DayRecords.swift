@@ -8,15 +8,15 @@ extension VocabularyLibrary {
     func dayRecords(calendar: Calendar = .current) -> [Date: [DayRecord]] {
         var grouped: [Date: [DayRecord]] = [:]
         for level in levels {
-            for session in level.sessions {
-                guard session.status == .completed, let lastStudiedAt = session.lastStudiedAt else { continue }
+            for lesson in level.lessons {
+                guard lesson.status == .completed, let lastStudiedAt = lesson.lastStudiedAt else { continue }
                 let day = calendar.startOfDay(for: lastStudiedAt)
                 let record = DayRecord(
-                    id: session.id,
-                    sessionID: session.id,
+                    id: lesson.id,
+                    lessonID: lesson.id,
                     time: lastStudiedAt,
-                    title: "\(level.name) \(session.sessionNumber)번째 세션",
-                    wordCount: session.totalWords
+                    title: "\(level.name) \(lesson.lessonNumber)번째 세션",
+                    wordCount: lesson.totalWords
                 )
                 grouped[day, default: []].append(record)
             }

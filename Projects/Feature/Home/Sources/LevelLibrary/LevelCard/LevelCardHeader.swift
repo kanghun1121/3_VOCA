@@ -6,8 +6,8 @@ struct LevelCardHeader: View {
     let level: Int
     let name: String
     let status: LevelStatus
-    let completedSessions: Int
-    let totalSessions: Int
+    let completedLessons: Int
+    let totalLessons: Int
     let isExpanded: Bool
 
     var body: some View {
@@ -26,7 +26,7 @@ struct LevelCardHeader: View {
                     .clipShape(.rect(cornerRadius: 100))
             }
             Spacer()
-            Text("\(completedSessions)/\(totalSessions)")
+            Text("\(completedLessons)/\(totalLessons)")
                 .font(DesignSystemFontFamily.Pretendard.semiBold.swiftUIFont(size: 13))
                 .foregroundStyle(DesignSystemAsset.fgMuted.swiftUIColor)
             Image(systemName: isExpanded ? "chevron.down" : "chevron.right")

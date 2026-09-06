@@ -16,7 +16,7 @@ extension HomeTypography.Style {
     static let dateNumber = Self(font: DesignSystemFontFamily.Pretendard.medium.swiftUIFont(size: 15), tracking: -0.15)
     static let dateNumberEmphasis = Self(font: DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 15), tracking: -0.15)
     static let selectedDateContext = Self(font: DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 15), tracking: -0.18)
-    static let sessionCountCaption = Self(font: DesignSystemFontFamily.Pretendard.medium.swiftUIFont(size: 12.5), tracking: 0)
+    static let lessonCountCaption = Self(font: DesignSystemFontFamily.Pretendard.medium.swiftUIFont(size: 12.5), tracking: 0)
     static let ctaTitle = Self(font: DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 18), tracking: -0.288)
     static let recordRowTitle = Self(font: DesignSystemFontFamily.Pretendard.semiBold.swiftUIFont(size: 15), tracking: -0.15)
     static let recordRowMeta = Self(font: DesignSystemFontFamily.Pretendard.medium.swiftUIFont(size: 12.5), tracking: 0)

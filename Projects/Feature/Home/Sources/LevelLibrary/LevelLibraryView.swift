@@ -1,7 +1,7 @@
 import SwiftUI
 
 import DesignSystem
-import FeatureSession
+import FeatureLesson
 
 import SwiftUINavigation
 
@@ -23,7 +23,7 @@ struct LevelLibraryView: View {
                         levels: state.levels,
                         expandedLevelIDs: viewModel.expandedLevelIDs,
                         onLevelTapped: { viewModel.didTapLevel(id: $0) },
-                        onSessionTapped: { viewModel.didTapSession(id: $0) }
+                        onLessonTapped: { viewModel.didTapLesson(id: $0) }
                     )
                 }
                 .background(DesignSystemAsset.background.swiftUIColor)
@@ -34,8 +34,8 @@ struct LevelLibraryView: View {
         .navigationTitle("학습 라이브러리")
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.onAppear() }
-        .navigationDestination(item: $viewModel.destination.session) { detailVM in
-            SessionDetailView(viewModel: detailVM)
+        .navigationDestination(item: $viewModel.destination.lesson) { detailVM in
+            LessonDetailView(viewModel: detailVM)
         }
     }
 }
