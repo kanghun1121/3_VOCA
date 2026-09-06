@@ -10,12 +10,12 @@ import Dependencies
 final class WordGameViewModelTests: XCTestCase {
     func test_startingFrom에_spelling을_주입한경우_activeStage가_spelling이_된다() async {
         let vm = withDependencies {
-            $0.getSessionDetailUseCase = .previewValue
+            $0.lessonRepository.fetchDetail = { id in .preview(id: id) }
+            $0.audioRepository.prefetch = { _ in }
         } operation: {
             WordGameViewModel(
-                sessionID: "t",
-                startingFrom: .spelling,
-                audioPrefetchTask: Task {}
+                lessonID: "t",
+                startingFrom: .spelling
             )
         }
 
@@ -27,8 +27,8 @@ final class WordGameViewModelTests: XCTestCase {
         }
     }
 
-    func test_게임이_끝났을때_sessionClient가_호출되고_dismiss된다() async {
-        let word = Session.Word(
+    func test_게임이_끝났을때_learningHistoryRepository의_complete가_호출되고_dismiss된다() async {
+        let word = Lesson.Word(
             id: "w1",
             term: "cat",
             pronunciation: "",
@@ -36,28 +36,27 @@ final class WordGameViewModelTests: XCTestCase {
             distractors: [],
             audioUrl: ""
         )
-        let session = Session(
+        let lesson = Lesson(
             id: "5",
             level: 1,
-            sessionNumber: 1,
+            lessonNumber: 1,
             estimatedDurationMinutes: 1,
             cefrLevel: "A1",
-            words: [word],
-            record: nil
+            words: [word]
         )
-        let recorder = CompleteSessionRecorder()
+        let recorder = CompleteLessonRecorder()
 
         // SpellingViewModel은 load() 내부에서 뒤늦게 생성되므로, soundClient 오버라이드가
         // 전파되도록 상호작용 전체를 async withDependencies 스코프 안에서 수행한다.
         await withDependencies {
-            $0.getSessionDetailUseCase.execute = { _ in session }
-            $0.completeSessionUseCase.execute = { id in await recorder.record(id) }
+            $0.lessonRepository.fetchDetail = { _ in lesson }
+            $0.audioRepository.prefetch = { _ in }
+            $0.learningHistoryRepository.complete = { id in await recorder.record(id) }
             $0.soundClient = .previewValue
         } operation: {
             let vm = WordGameViewModel(
-                sessionID: "5",
-                startingFrom: .spelling,
-                audioPrefetchTask: Task {}
+                lessonID: "5",
+                startingFrom: .spelling
             )
 
             await vm.load()
@@ -86,7 +85,7 @@ final class WordGameViewModelTests: XCTestCase {
     }
 }
 
-private actor CompleteSessionRecorder {
+private actor CompleteLessonRecorder {
     private(set) var completedID: Int?
 
     func record(_ id: Int) {

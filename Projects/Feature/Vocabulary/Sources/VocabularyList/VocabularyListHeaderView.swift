@@ -4,7 +4,7 @@ import DesignSystem
 
 struct VocabularyListHeaderView: View {
     let level: Int
-    let sessionNumber: Int
+    let lessonNumber: Int
     let wordCount: Int
 
     var body: some View {
@@ -13,7 +13,7 @@ struct VocabularyListHeaderView: View {
                 .font(DesignSystemFontFamily.Pretendard.extraBold.swiftUIFont(size: 28))
                 .foregroundStyle(DesignSystemAsset.fgStrong.swiftUIColor)
                 .kerning(-0.025 * 28)
-            Text("Level \(level) · Session \(sessionNumber)")
+            Text("Level \(level) · Session \(lessonNumber)")
                 .font(DesignSystemFontFamily.Pretendard.regular.swiftUIFont(size: 14))
                 .foregroundStyle(DesignSystemAsset.fgMuted.swiftUIColor)
                 .padding(.top, 4)

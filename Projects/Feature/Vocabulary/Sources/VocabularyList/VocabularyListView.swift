@@ -48,9 +48,9 @@ public struct VocabularyListView: View {
 
 #Preview("로딩") {
     let vm = withDependencies {
-        $0.getSessionDetailUseCase = .previewLoading
+        $0.loadVocabularyListUseCase = .previewLoading
     } operation: {
-        VocabularyListViewModel(sessionID: "preview")
+        VocabularyListViewModel(lessonID: "preview")
     }
     NavigationStack {
         VocabularyListView(viewModel: vm)

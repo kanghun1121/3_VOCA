@@ -8,14 +8,13 @@ import Dependencies
 @Observable
 @MainActor
 public final class WordGameViewModel {
-
     enum ActiveStage {
         case loading
         case launch(onStart: () -> Void)
         case recognition(RecognitionViewModel)
-        case stageEnd(title: String, onContinue: () -> Void)
         case multipleChoice(MultipleChoiceViewModel)
         case spelling(SpellingViewModel)
+        case stageEnd(title: String, onContinue: () -> Void)
         case gameComplete(wordCount: Int, onDismiss: () -> Void)
         case error(String)
     }
@@ -29,29 +28,31 @@ public final class WordGameViewModel {
     private(set) var activeStage: ActiveStage = .loading
     var dismiss = false
     private(set) var finishGameTask: Task<Void, Never>?
-
-    @ObservationIgnored @Dependency(\.getSessionDetailUseCase) private var getSessionDetailUseCase
-    @ObservationIgnored @Dependency(\.completeSessionUseCase) private var completeSessionUseCase
-
-    private let sessionID: String
+    private let lessonID: String
     private let startingStage: StartingStage
-    private let audioPrefetchTask: Task<Void, Never>
+
+    @ObservationIgnored @Dependency(\.lessonRepository) private var lessonRepository
+    @ObservationIgnored @Dependency(\.audioRepository) private var audioRepository
+    @ObservationIgnored @Dependency(\.learningHistoryRepository) private var learningHistoryRepository
 
     public init(
-        sessionID: String,
-        startingFrom: StartingStage = .recognition,
-        audioPrefetchTask: Task<Void, Never>
+        lessonID: String,
+        startingFrom: StartingStage = .recognition
     ) {
-        self.sessionID = sessionID
+        self.lessonID = lessonID
         self.startingStage = startingFrom
-        self.audioPrefetchTask = audioPrefetchTask
     }
 
     func load() async {
         do {
-            let session = try await getSessionDetailUseCase.execute(sessionID)
-            await audioPrefetchTask.value
-            let words = session.words
+            let lesson = try await lessonRepository.fetchDetail(lessonID)
+            // "프리페치 세팅" — 이 레슨의 모든 단어를 한 번에 넘겨 로컬에 미리 받아두게 한다.
+            // await로 완료까지 기다리므로, 이 줄이 끝난 뒤부터는 게임 화면(Recognition/
+            // MultipleChoice)이 각 단어를 재생할 때(WordPronunciationPlayer.play) 전부
+            // 캐시 hit이어야 정상 — 즉 여기가 "오디오 세팅"이 실제로 일어나는 지점이다.
+            let audioItems = lesson.words.map { ($0.term, $0.audioUrl) }
+            await audioRepository.prefetch(audioItems)
+            let words = lesson.words
             switch startingStage {
             case .recognition:    showLaunch(words: words)
             case .multipleChoice: startMultipleChoice(words: words)
@@ -62,13 +63,13 @@ public final class WordGameViewModel {
         }
     }
 
-    private func showLaunch(words: [Session.Word]) {
+    private func showLaunch(words: [Lesson.Word]) {
         withAnimation(.easeInOut(duration: 0.3)) {
             activeStage = .launch(onStart: { [weak self] in self?.startRecognition(words: words) })
         }
     }
 
-    private func startRecognition(words: [Session.Word]) {
+    private func startRecognition(words: [Lesson.Word]) {
         let vm = RecognitionViewModel(
             words: words,
             onCompleted: { [weak self] in self?.showStageEnd(title: "인식 단계 종료!", onContinue: { self?.startMultipleChoice(words: words) }) },
@@ -79,7 +80,7 @@ public final class WordGameViewModel {
         }
     }
 
-    private func startMultipleChoice(words: [Session.Word]) {
+    private func startMultipleChoice(words: [Lesson.Word]) {
         let vm = MultipleChoiceViewModel(
             words: words,
             onCompleted: { [weak self] in self?.showStageEnd(title: "뜻 단계 종료!", onContinue: { self?.startSpelling(words: words) }) },
@@ -90,7 +91,7 @@ public final class WordGameViewModel {
         }
     }
 
-    private func startSpelling(words: [Session.Word]) {
+    private func startSpelling(words: [Lesson.Word]) {
         let vm = SpellingViewModel(
             words: words,
             onCompleted: { [weak self] in self?.showGameComplete(wordCount: words.count) },
@@ -116,8 +117,8 @@ public final class WordGameViewModel {
     private func finishGame() {
         finishGameTask = Task { [weak self] in
             guard let self else { return }
-            if let id = Int(sessionID) {
-                try? await completeSessionUseCase.execute(id)
+            if let id = Int(lessonID) {
+                try? await learningHistoryRepository.complete(id)
             }
             dismiss = true
         }

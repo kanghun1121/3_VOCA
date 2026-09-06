@@ -4,7 +4,7 @@ import DesignSystem
 import DomainInterface
 
 struct VocabularyListContentView: View {
-    let state: Session
+    let state: Lesson
     let onWordTapped: (String) -> Void
 
     @State private var blurMode: BlurMode = .off
@@ -15,7 +15,7 @@ struct VocabularyListContentView: View {
             VStack(alignment: .leading, spacing: 0) {
                 VocabularyListHeaderView(
                     level: state.level,
-                    sessionNumber: state.sessionNumber,
+                    lessonNumber: state.lessonNumber,
                     wordCount: state.words.count
                 )
                 .padding(.bottom, 14)
@@ -96,7 +96,7 @@ private struct BlurModeButton: View {
 // MARK: - Word List
 
 private struct WordList: View {
-    let words: [Session.Word]
+    let words: [Lesson.Word]
     let blurMode: BlurMode
     let revealedIDs: Set<String>
     let onTapped: (String) -> Void
