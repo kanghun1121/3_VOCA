@@ -10,7 +10,7 @@ extension WordRepository: DependencyKey {
         @Dependency(\.authenticatedHTTPClient) var http
         let cache = WordDetailCache()
         return WordRepository(
-            fetchWordDetail: { id in
+            fetchDetail: { id in
                 if let cached = await cache.get(id) { return cached }
                 let request = GetWordDetailRequest(wordID: id)
                 let dto: WordDetailResponseDTO = try await http.request(request)
@@ -18,7 +18,7 @@ extension WordRepository: DependencyKey {
                 await cache.set(id, detail)
                 return detail
             },
-            prefetchWordDetails: { ids in
+            prefetchDetails: { ids in
                 await withTaskGroup(of: Void.self) { group in
                     for id in ids {
                         group.addTask {

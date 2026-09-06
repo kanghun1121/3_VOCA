@@ -39,7 +39,7 @@ extension AuthSessionRepository: DependencyKey {
             },
             getRefreshToken: { try keychain.load(.refreshToken) },
             setRefreshToken: { try keychain.save(.refreshToken, $0) },
-            clearSession: {
+            clear: {
                 await store.clear()
                 // yield 먼저 — keychain.delete 실패 시에도 stream이 막히지 않도록
                 continuation.yield(.unauthenticated)
@@ -76,7 +76,7 @@ extension AuthSessionRepository: DependencyKey {
                     }
                 }
             },
-            authStateStream: { stream }
+            stateStream: { stream }
         )
     }()
 }

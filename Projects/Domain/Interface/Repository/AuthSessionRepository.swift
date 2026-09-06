@@ -8,29 +8,29 @@ public struct AuthSessionRepository: Sendable {
     public var setAccessToken: @Sendable (String) async -> Void
     public var getRefreshToken: @Sendable () throws -> String
     public var setRefreshToken: @Sendable (String) throws -> Void
-    public var clearSession: @Sendable () async throws -> Void
+    public var clear: @Sendable () async throws -> Void
     public var deleteAccount: @Sendable () async throws -> Void
     public var refreshAccessToken: @Sendable () async -> Bool
-    public var authStateStream: @Sendable () -> AsyncStream<AuthState>
+    public var stateStream: @Sendable () -> AsyncStream<AuthState>
 
     public init(
         getAccessToken: @escaping @Sendable () async -> String?,
         setAccessToken: @escaping @Sendable (String) async -> Void,
         getRefreshToken: @escaping @Sendable () throws -> String,
         setRefreshToken: @escaping @Sendable (String) throws -> Void,
-        clearSession: @escaping @Sendable () async throws -> Void,
+        clear: @escaping @Sendable () async throws -> Void,
         deleteAccount: @escaping @Sendable () async throws -> Void,
         refreshAccessToken: @escaping @Sendable () async -> Bool,
-        authStateStream: @escaping @Sendable () -> AsyncStream<AuthState>
+        stateStream: @escaping @Sendable () -> AsyncStream<AuthState>
     ) {
         self.getAccessToken = getAccessToken
         self.setAccessToken = setAccessToken
         self.getRefreshToken = getRefreshToken
         self.setRefreshToken = setRefreshToken
-        self.clearSession = clearSession
+        self.clear = clear
         self.deleteAccount = deleteAccount
         self.refreshAccessToken = refreshAccessToken
-        self.authStateStream = authStateStream
+        self.stateStream = stateStream
     }
 }
 
@@ -40,10 +40,10 @@ extension AuthSessionRepository: TestDependencyKey {
         setAccessToken: unimplemented("\(Self.self).setAccessToken"),
         getRefreshToken: unimplemented("\(Self.self).getRefreshToken"),
         setRefreshToken: unimplemented("\(Self.self).setRefreshToken"),
-        clearSession: unimplemented("\(Self.self).clearSession"),
+        clear: unimplemented("\(Self.self).clear"),
         deleteAccount: unimplemented("\(Self.self).deleteAccount"),
         refreshAccessToken: unimplemented("\(Self.self).refreshAccessToken"),
-        authStateStream: unimplemented("\(Self.self).authStateStream")
+        stateStream: unimplemented("\(Self.self).stateStream")
     )
 }
 
