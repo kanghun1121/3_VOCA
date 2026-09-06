@@ -8,8 +8,8 @@ let workspace = Workspace(
             name: "AllTest",
             buildAction: .buildAction(targets: [
                 .project(path: "Projects/Core", target: "CoreTests"),
-                .project(path: "Projects/Data", target: "DataTests"),
                 .project(path: "Projects/Domain", target: "DomainTests"),
+                .project(path: "Projects/Data", target: "DataTests"),
                 .project(path: "Projects/Networking", target: "NetworkingTests"),
                 .project(path: "Projects/Feature/Analysis", target: "FeatureAnalysisTests"),
                 .project(path: "Projects/Feature/ChatBot", target: "FeatureChatBotTests"),
@@ -25,10 +25,10 @@ let workspace = Workspace(
                     target: .project(path: "Projects/Core", target: "CoreTests")
                 ),
                 .testableTarget(
-                    target: .project(path: "Projects/Data", target: "DataTests")
+                    target: .project(path: "Projects/Domain", target: "DomainTests")
                 ),
                 .testableTarget(
-                    target: .project(path: "Projects/Domain", target: "DomainTests")
+                    target: .project(path: "Projects/Data", target: "DataTests")
                 ),
                 .testableTarget(
                     target: .project(path: "Projects/Networking", target: "NetworkingTests")
