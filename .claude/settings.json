@@ -9,17 +9,6 @@
     ]
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/block-sensitive-paths.sh"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "hooks": [
