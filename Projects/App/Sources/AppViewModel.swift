@@ -11,7 +11,7 @@ final class AppViewModel {
     var isCheckingSession = true
 
     @ObservationIgnored @Dependency(\.checkAuthSessionUseCase) private var checkAuthSessionUseCase
-    @ObservationIgnored @Dependency(\.observeAuthStateUseCase) private var observeAuthStateUseCase
+    @ObservationIgnored @Dependency(\.authSessionRepository) private var authSessionRepository
     @ObservationIgnored @Dependency(\.refreshAuthSessionUseCase) private var refreshAuthSessionUseCase
 
     private var streamTask: Task<Void, Never>?
@@ -24,7 +24,7 @@ final class AppViewModel {
         guard streamTask == nil else { return }
         streamTask = Task { [weak self] in
             guard let self else { return }
-            for await state in observeAuthStateUseCase.execute() {
+            for await state in authSessionRepository.stateStream() {
                 authState = state
             }
         }

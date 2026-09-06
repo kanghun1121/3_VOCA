@@ -18,7 +18,6 @@ struct ChatBotExampleApp: App {
         prepareDependencies {
             $0.sseClient = SSEClientKey.liveValue
             $0.chatRepository = .liveValue
-            $0.sendChatMessageUseCase = .liveValue
         }
     }
 

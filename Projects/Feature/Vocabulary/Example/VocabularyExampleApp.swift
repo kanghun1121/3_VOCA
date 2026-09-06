@@ -8,9 +8,9 @@ import Dependencies
 struct VocabularyExampleApp: App {
     init() {
         prepareDependencies {
-            $0.getSessionDetailUseCase = .previewValue
-            $0.prefetchWordDetailsUseCase = .previewValue
-            $0.getWordDetailUseCase = .previewValue
+            $0.loadVocabularyListUseCase = .previewValue
+            $0.wordRepository.fetchDetail = { _ in .previewFixture }
+            $0.audioRepository.url = { _ in nil }
         }
     }
 
@@ -24,7 +24,7 @@ struct VocabularyExampleApp: App {
 private struct ContentView: View {
     var body: some View {
         NavigationStack {
-            VocabularyListView(viewModel: VocabularyListViewModel(sessionID: "demo"))
+            VocabularyListView(viewModel: VocabularyListViewModel(lessonID: "demo"))
         }
     }
 }

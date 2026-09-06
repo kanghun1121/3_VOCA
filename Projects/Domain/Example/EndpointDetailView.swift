@@ -6,34 +6,34 @@ import Dependencies
 
 struct EndpointDetailView: View {
     enum Endpoint {
-        case sessionDetail
+        case lessonDetail
         case wordDetail
         case authSignIn
 
         var title: String {
             switch self {
-            case .sessionDetail: "fetchSessionDetail(id:)"
-            case .wordDetail: "fetchWordDetail(id:)"
+            case .lessonDetail: "lessonRepository.fetchDetail(id:)"
+            case .wordDetail: "wordRepository.fetchDetail(id:)"
             case .authSignIn: "signInWithApple(identityToken:)"
             }
         }
 
         var hasIdParam: Bool {
             switch self {
-            case .sessionDetail, .wordDetail, .authSignIn: true
+            case .lessonDetail, .wordDetail, .authSignIn: true
             }
         }
 
         var paramLabel: String {
             switch self {
-            case .sessionDetail, .wordDetail: "id"
+            case .lessonDetail, .wordDetail: "id"
             case .authSignIn: "identityToken"
             }
         }
 
         var randomId: String {
             switch self {
-            case .sessionDetail: String(Int.random(in: 1...244))
+            case .lessonDetail: String(Int.random(in: 1...244))
             case .wordDetail: "word_\(Int.random(in: 1...800))"
             case .authSignIn: ""
             }
@@ -47,8 +47,8 @@ struct EndpointDetailView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
 
-    @Dependency(\.getSessionDetailUseCase) private var getSessionDetailUseCase
-    @Dependency(\.getWordDetailUseCase) private var getWordDetailUseCase
+    @Dependency(\.lessonRepository) private var lessonRepository
+    @Dependency(\.wordRepository) private var wordRepository
     @Dependency(\.signInWithAppleUseCase) private var signInWithAppleUseCase
 
     var body: some View {
@@ -133,11 +133,11 @@ struct EndpointDetailView: View {
 
         do {
             switch endpoint {
-            case .sessionDetail:
-                let result = try await getSessionDetailUseCase.execute(idInput)
+            case .lessonDetail:
+                let result = try await lessonRepository.fetchDetail(idInput)
                 response = dumpString(result)
             case .wordDetail:
-                let result = try await getWordDetailUseCase.execute(idInput)
+                let result = try await wordRepository.fetchDetail(idInput)
                 response = dumpString(result)
             case .authSignIn:
                 let result = try await signInWithAppleUseCase.execute(idInput)

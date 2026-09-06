@@ -17,12 +17,12 @@ struct RootView: View {
     // liveValue를 지정해 링크를 강제한다.
     @State private var viewModel = withDependencies {
         $0.checkAuthSessionUseCase = .liveValue
-        $0.observeAuthStateUseCase = .liveValue
         $0.refreshAuthSessionUseCase = .liveValue
         $0.authSessionRepository = .liveValue
         $0.authRepository = .liveValue
         $0.vocabularyLibraryRepository = .liveValue
-        $0.sessionRepository = .liveValue
+        $0.lessonRepository = .liveValue
+        $0.learningHistoryRepository = .liveValue
         $0.wordRepository = .liveValue
         $0.audioRepository = .liveValue
         $0.audioPlayerRepository = .liveValue

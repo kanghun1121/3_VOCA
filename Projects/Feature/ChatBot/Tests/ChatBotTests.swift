@@ -9,7 +9,7 @@ import Dependencies
 
 @MainActor
 final class ChatBotTests: XCTestCase {
-    // sendChatMessageUseCase.execute는 nonisolated @Sendable 클로저라, 이 클래스의
+    // chatRepository.streamMessage는 nonisolated @Sendable 클로저라, 이 클래스의
     // @MainActor 격리를 타지 않는 static 헬퍼로 스트림을 만든다.
 
     /// 청크를 하나 yield한 뒤 `finish`하지 않고 열어 둔 스트림 — 취소될 때까지 끝나지 않는다.
@@ -42,7 +42,7 @@ final class ChatBotTests: XCTestCase {
 
     func test_스트리밍_중_취소하면_누적된_텍스트를_보존하고_스트리밍_상태를_복구한다() async {
         let viewModel = withDependencies {
-            $0.sendChatMessageUseCase.execute = { _ in Self.openStream(yielding: "안녕") }
+            $0.chatRepository.streamMessage = { _ in Self.openStream(yielding: "안녕") }
         } operation: {
             ChatBotViewModel(context: .init(term: "address", sentence: "I wrote my address.", levelLabel: "초급"))
         }
@@ -66,7 +66,7 @@ final class ChatBotTests: XCTestCase {
 
     func test_첫_응답_전에_취소하면_빈_자리표시_메시지를_제거한다() async {
         let viewModel = withDependencies {
-            $0.sendChatMessageUseCase.execute = { _ in Self.neverYieldingStream() }
+            $0.chatRepository.streamMessage = { _ in Self.neverYieldingStream() }
         } operation: {
             ChatBotViewModel(context: .init(term: "address", sentence: "I wrote my address.", levelLabel: "초급"))
         }
@@ -83,7 +83,7 @@ final class ChatBotTests: XCTestCase {
 
     func test_실패하면_AI_메시지로_표시되고_다음_전송_시_히스토리에서_사라진다() async {
         let viewModel = withDependencies {
-            $0.sendChatMessageUseCase.execute = { _ in Self.failingStream() }
+            $0.chatRepository.streamMessage = { _ in Self.failingStream() }
         } operation: {
             ChatBotViewModel(context: .init(term: "address", sentence: "I wrote my address.", levelLabel: "초급"))
         }
@@ -98,7 +98,7 @@ final class ChatBotTests: XCTestCase {
 
         // 다음 전송을 시작하는 순간 실패 메시지는 히스토리에서 사라진다.
         withDependencies {
-            $0.sendChatMessageUseCase.execute = { _ in Self.neverYieldingStream() }
+            $0.chatRepository.streamMessage = { _ in Self.neverYieldingStream() }
         } operation: {
             viewModel.input = "다음 질문"
             viewModel.didTapSend()
