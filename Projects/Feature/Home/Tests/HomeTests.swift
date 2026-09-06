@@ -54,7 +54,7 @@ final class CalendarGridTests: XCTestCase {
         let records = (0..<4).map { index in
             DayRecord(
                 id: "\(index)",
-                sessionID: "\(index)",
+                lessonID: "\(index)",
                 time: june,
                 title: "세션",
                 wordCount: 10

@@ -15,20 +15,20 @@ private extension VocabularyLibraryResponseDTO.LevelDTO {
             level: level,
             name: name,
             difficulty: difficulty,
-            totalSessions: totalSessions,
-            completedSessions: completedSessions,
-            sessions: sessions.map { $0.toDomain() }
+            totalLessons: totalSessions,
+            completedLessons: completedSessions,
+            lessons: sessions.map { $0.toDomain() }
         )
     }
 }
 
 private extension VocabularyLibraryResponseDTO.SessionDTO {
-    func toDomain() -> SessionProgress {
-        SessionProgress(
+    func toDomain() -> LessonProgress {
+        LessonProgress(
             id: String(id),
-            sessionNumber: sessionNumber,
+            lessonNumber: sessionNumber,
             totalWords: totalWords,
-            status: SessionProgressStatus(rawValue: status) ?? .notStarted,
+            status: LessonProgressStatus(rawValue: status) ?? .notStarted,
             lastStudiedAt: lastStudiedAt.flatMap { Self.iso.date(from: $0) },
             accuracy: accuracy,
             wordsCompleted: wordsCompleted ?? 0

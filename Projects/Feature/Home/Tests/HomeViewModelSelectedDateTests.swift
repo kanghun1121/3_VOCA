@@ -46,12 +46,12 @@ final class HomeViewModelSelectedDateTests: XCTestCase {
                 level: 1,
                 name: "Level 1",
                 difficulty: "A1",
-                totalSessions: 1,
-                completedSessions: 1,
-                sessions: [
-                    SessionProgress(
+                totalLessons: 1,
+                completedLessons: 1,
+                lessons: [
+                    LessonProgress(
                         id: "session_1",
-                        sessionNumber: 1,
+                        lessonNumber: 1,
                         totalWords: 10,
                         status: .completed,
                         lastStudiedAt: studiedAt,
@@ -78,7 +78,7 @@ final class HomeViewModelSelectedDateTests: XCTestCase {
         // 선택은 어제 오전 9시 — 저장된 시각(오후 3시)과 시:분은 다르지만 같은 날이므로 매칭돼야 한다.
         vm.didTapDate(cal.date(byAdding: .hour, value: 9, to: yesterday)!)
 
-        XCTAssertEqual(vm.selectedDayRecords.map(\.sessionID), ["session_1"])
+        XCTAssertEqual(vm.selectedDayRecords.map(\.lessonID), ["session_1"])
     }
 
     func test_selectedDayRecords_기록이_없는_날짜를_선택하면_빈_배열을_반환한다() async {

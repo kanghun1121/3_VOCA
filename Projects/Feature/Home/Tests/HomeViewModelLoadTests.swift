@@ -111,9 +111,9 @@ private func makeLibrary(levelID: String) -> VocabularyLibrary {
             level: 1,
             name: "Level 1",
             difficulty: "A1",
-            totalSessions: 1,
-            completedSessions: 0,
-            sessions: []
+            totalLessons: 1,
+            completedLessons: 0,
+            lessons: []
         ),
     ])
 }

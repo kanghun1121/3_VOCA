@@ -2,9 +2,9 @@ import DomainInterface
 
 extension LevelSummary {
     var status: LevelStatus {
-        if completedSessions == 0 {
+        if completedLessons == 0 {
             .notStarted
-        } else if completedSessions >= totalSessions {
+        } else if completedLessons >= totalLessons {
             .completed
         } else {
             .active
@@ -12,6 +12,6 @@ extension LevelSummary {
     }
 
     var progressRatio: Double {
-        totalSessions == 0 ? 0 : Double(completedSessions) / Double(totalSessions)
+        totalLessons == 0 ? 0 : Double(completedLessons) / Double(totalLessons)
     }
 }

@@ -23,7 +23,7 @@ struct SelectedDateContextRow: View {
                 .foregroundStyle(DesignSystemAsset.fgStrong.swiftUIColor)
             Spacer()
             Text(countLabel)
-                .homeTypography(.sessionCountCaption)
+                .homeTypography(.lessonCountCaption)
                 .foregroundStyle(DesignSystemAsset.fgSubtle.swiftUIColor)
         }
         .padding(.top, 22)

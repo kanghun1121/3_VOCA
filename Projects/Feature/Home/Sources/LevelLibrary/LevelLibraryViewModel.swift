@@ -1,7 +1,7 @@
 import Foundation
 
 import DomainInterface
-import FeatureSession
+import FeatureLesson
 
 import Dependencies
 import SwiftUINavigation
@@ -15,17 +15,18 @@ public final class LevelLibraryViewModel {
         case error(String)
     }
 
-    private(set) var uiState: LevelLibraryUIState = .loading
-    private(set) var expandedLevelIDs: Set<String> = []
-    var destination: Destination?
-    private(set) var observationTask: Task<Void, Never>?
-
-    @ObservationIgnored @Dependency(\.vocabularyLibraryRepository) private var vocabularyLibraryRepository
-
     @CasePathable
     public enum Destination {
-        case session(SessionDetailViewModel)
+        case lesson(LessonDetailViewModel)
     }
+
+    var destination: Destination?
+
+    private(set) var uiState: LevelLibraryUIState = .loading
+    private(set) var expandedLevelIDs: Set<String> = []
+    @ObservationIgnored private(set) var observationTask: Task<Void, Never>?
+
+    @ObservationIgnored @Dependency(\.vocabularyLibraryRepository) private var vocabularyLibraryRepository
 
     public init() {}
 
@@ -39,13 +40,6 @@ public final class LevelLibraryViewModel {
         }
     }
 
-    private func apply(_ library: VocabularyLibrary) {
-        if expandedLevelIDs.isEmpty, let activeID = library.levels.first(where: { $0.status == .active })?.id {
-            expandedLevelIDs.insert(activeID)
-        }
-        uiState = .success(library)
-    }
-
     func didTapLevel(id: String) {
         if expandedLevelIDs.contains(id) {
             expandedLevelIDs.remove(id)
@@ -54,8 +48,15 @@ public final class LevelLibraryViewModel {
         }
     }
 
-    func didTapSession(id: String) {
-        destination = .session(SessionDetailViewModel(sessionID: id))
+    func didTapLesson(id: String) {
+        destination = .lesson(LessonDetailViewModel(lessonID: id))
+    }
+
+    private func apply(_ library: VocabularyLibrary) {
+        if expandedLevelIDs.isEmpty, let activeID = library.levels.first(where: { $0.status == .active })?.id {
+            expandedLevelIDs.insert(activeID)
+        }
+        uiState = .success(library)
     }
 
     deinit {

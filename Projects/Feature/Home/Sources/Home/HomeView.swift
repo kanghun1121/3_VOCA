@@ -1,7 +1,7 @@
 import SwiftUI
 
 import DesignSystem
-import FeatureSession
+import FeatureLesson
 
 import SwiftUINavigation
 
@@ -28,8 +28,8 @@ public struct HomeView: View {
             }
             .animation(.easeInOut(duration: 0.15), value: viewModel.uiState)
             .task { await viewModel.onAppear() }
-            .navigationDestination(item: $viewModel.destination.session) { detailVM in
-                SessionDetailView(viewModel: detailVM)
+            .navigationDestination(item: $viewModel.destination.lesson) { detailVM in
+                LessonDetailView(viewModel: detailVM)
             }
             .navigationDestination(item: $viewModel.destination.levelLibrary) { libraryVM in
                 LevelLibraryView(viewModel: libraryVM)

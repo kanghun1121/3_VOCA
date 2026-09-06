@@ -63,7 +63,7 @@ struct HomeContentView: View {
             LazyVStack(spacing: 0) {
                 ForEach(records) { record in
                     RecordRow(record: record) {
-                        viewModel.didTapSession(id: record.sessionID)
+                        viewModel.didTapLesson(id: record.lessonID)
                     }
                 }
             }
