@@ -8,9 +8,9 @@ import Dependencies
 final class VocabularyListViewModelTests: XCTestCase {
     func test_load_실패시_viewState가_error로_전환된다() async {
         let vm = withDependencies {
-            $0.getSessionDetailUseCase.execute = { _ in throw MockError.stub }
+            $0.loadVocabularyListUseCase.execute = { _ in throw MockError.stub }
         } operation: {
-            VocabularyListViewModel(sessionID: "t")
+            VocabularyListViewModel(lessonID: "t")
         }
 
         await vm.load()
@@ -23,31 +23,27 @@ final class VocabularyListViewModelTests: XCTestCase {
 
     func test_load_성공시_viewState가_loaded이며_Mock데이터가_올바르다() async {
         let vm = withDependencies {
-            $0.getSessionDetailUseCase = .previewValue
-            $0.prefetchWordDetailsUseCase.execute = { _ in }
-            $0.prefetchAudioUseCase.execute = { _ in }
+            $0.loadVocabularyListUseCase = .previewValue
         } operation: {
-            VocabularyListViewModel(sessionID: "t")
+            VocabularyListViewModel(lessonID: "t")
         }
 
         await vm.load()
 
-        guard case .loaded(let session) = vm.viewState else {
+        guard case .loaded(let lesson) = vm.viewState else {
             XCTFail("viewState가 .loaded여야 합니다. 실제: \(vm.viewState)")
             return
         }
-        XCTAssertEqual(session.level, 1)
-        XCTAssertEqual(session.sessionNumber, 2)
-        XCTAssertEqual(session.words.count, 15)
+        XCTAssertEqual(lesson.level, 1)
+        XCTAssertEqual(lesson.lessonNumber, 2)
+        XCTAssertEqual(lesson.words.count, 15)
     }
 
     func test_didTapWord_잘못된ID_호출시_destination이_nil이다() async {
         let vm = withDependencies {
-            $0.getSessionDetailUseCase = .previewValue
-            $0.prefetchWordDetailsUseCase.execute = { _ in }
-            $0.prefetchAudioUseCase.execute = { _ in }
+            $0.loadVocabularyListUseCase = .previewValue
         } operation: {
-            VocabularyListViewModel(sessionID: "t")
+            VocabularyListViewModel(lessonID: "t")
         }
 
         await vm.load()
@@ -58,11 +54,9 @@ final class VocabularyListViewModelTests: XCTestCase {
 
     func test_didTapWord_정상ID_호출시_destination이_wordDetail로_설정된다() async {
         let vm = withDependencies {
-            $0.getSessionDetailUseCase = .previewValue
-            $0.prefetchWordDetailsUseCase.execute = { _ in }
-            $0.prefetchAudioUseCase.execute = { _ in }
+            $0.loadVocabularyListUseCase = .previewValue
         } operation: {
-            VocabularyListViewModel(sessionID: "t")
+            VocabularyListViewModel(lessonID: "t")
         }
 
         await vm.load()
