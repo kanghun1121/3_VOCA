@@ -1,10 +1,10 @@
 import Foundation
 
-struct ClaudeMessagesRequestBody: Encodable {
+struct ChatProxyRequestBody: Encodable {
     let model: String
     let maxTokens: Int
     let stream = true
-    let messages: [ClaudeChatMessage]
+    let messages: [ChatProxyMessage]
 
     enum CodingKeys: String, CodingKey {
         case model
