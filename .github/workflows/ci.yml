@@ -24,7 +24,6 @@ jobs:
           cat > Projects/App/Secrets.xcconfig << EOF
           SUPABASE_ANON_KEY = ${{ secrets.SUPABASE_ANON_KEY }}
           MW_DICTIONARY_API_KEY = ${{ secrets.MW_DICTIONARY_API_KEY }}
-          CLAUDE_API_KEY = ${{ secrets.CLAUDE_API_KEY }}
           EOF
 
       - name: tuist install & generate
