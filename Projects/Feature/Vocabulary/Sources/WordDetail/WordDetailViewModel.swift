@@ -22,18 +22,31 @@ public final class WordDetailViewModel {
         case chatBot(ChatBotViewModel)
     }
 
-    private(set) var viewStates: [Int: ViewState] = [:]
     var currentIndex: Int
     var destination: Destination?
+
+    private(set) var viewStates: [Int: ViewState] = [:]
     let wordIDs: [String]
 
-    @ObservationIgnored @Dependency(\.getWordDetailUseCase) private var getWordDetailUseCase
-    @ObservationIgnored @Dependency(\.getAudioURLUseCase) private var getAudioURLUseCase
-    @ObservationIgnored @Dependency(\.playAudioUseCase) private var playAudioUseCase
+    @ObservationIgnored @Dependency(\.wordRepository) private var wordRepository
+    @ObservationIgnored @Dependency(\.audioRepository) private var audioRepository
+    @ObservationIgnored @Dependency(\.audioPlayerRepository) private var audioPlayerRepository
 
     public init(wordIDs: [String], initialIndex: Int) {
         self.wordIDs = wordIDs
         self.currentIndex = initialIndex
+    }
+
+    func requestIfNeeded(at index: Int) async {
+        guard wordIDs.indices.contains(index), viewStates[index] == nil else { return }
+        viewStates[index] = .loading
+        do {
+            let detail = try await wordRepository.fetchDetail(wordIDs[index])
+            viewStates[index] = .loaded(detail)
+        } catch {
+            print("[WordDetail] 단어 로드 실패 (index: \(index)):", error)
+            viewStates[index] = .error("단어 정보를 불러오지 못했습니다.")
+        }
     }
 
     func pronunciationTapped(_ term: String) {
@@ -41,8 +54,8 @@ public final class WordDetailViewModel {
     }
 
     func didTapPronunciationButton(term: String) async {
-        guard let url = await getAudioURLUseCase.execute(term) else { return }
-        await playAudioUseCase.execute(url)
+        guard let url = await audioRepository.url(term) else { return }
+        await audioPlayerRepository.play(url)
     }
 
     func didTapChunkReader(example: WordDetail.Example) {
@@ -56,17 +69,5 @@ public final class WordDetailViewModel {
             sentence: example.en,
             levelLabel: "Level \(state.level)"
         )))
-    }
-
-    func requestIfNeeded(at index: Int) async {
-        guard wordIDs.indices.contains(index), viewStates[index] == nil else { return }
-        viewStates[index] = .loading
-        do {
-            let detail = try await getWordDetailUseCase.execute(wordIDs[index])
-            viewStates[index] = .loaded(detail)
-        } catch {
-            print("[WordDetail] 단어 로드 실패 (index: \(index)):", error)
-            viewStates[index] = .error("단어 정보를 불러오지 못했습니다.")
-        }
     }
 }

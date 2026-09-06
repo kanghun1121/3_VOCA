@@ -4,13 +4,13 @@ struct ClientListView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("GetSessionDetailUseCase") {
-                    NavigationLink("execute(id:)") {
-                        EndpointDetailView(endpoint: .sessionDetail)
+                Section("LessonRepository") {
+                    NavigationLink("fetchDetail(id:)") {
+                        EndpointDetailView(endpoint: .lessonDetail)
                     }
                 }
-                Section("GetWordDetailUseCase") {
-                    NavigationLink("execute(id:)") {
+                Section("WordRepository") {
+                    NavigationLink("fetchDetail(id:)") {
                         EndpointDetailView(endpoint: .wordDetail)
                     }
                 }

@@ -12,7 +12,7 @@ public final class ChatBotViewModel {
     private(set) var messages: [ChatBotMessage] = []
     private(set) var isStreaming: Bool = false
 
-    @ObservationIgnored @Dependency(\.sendChatMessageUseCase) private var sendChatMessageUseCase
+    @ObservationIgnored @Dependency(\.chatRepository) private var chatRepository
     // 테스트에서 스트림 종료를 결정론적으로 기다리기 위해 노출한다
     // (WordGame의 SpellingViewModel.advanceTask와 같은 방식).
     @ObservationIgnored private(set) var streamTask: Task<Void, Never>?
@@ -49,7 +49,7 @@ public final class ChatBotViewModel {
 
         streamTask = Task {
             do {
-                for try await chunk in sendChatMessageUseCase.execute(message) {
+                for try await chunk in chatRepository.streamMessage(message) {
                     // 청크 하나를 통째로 붙이면 그 안의 여러 단어가 한 프레임에 동시 등장한다.
                     // 단어 경계로 쪼개 하나씩 붙이고, 다음 단어로 넘어가기 전 wordRevealDelay만큼
                     // 대기해 타이핑처럼 천천히 펼쳐지게 한다.
