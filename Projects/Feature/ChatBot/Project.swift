@@ -25,8 +25,7 @@ let project = Project.makeModule(
                 "UIApplicationSceneManifest": [
                     "UIApplicationSupportsMultipleScenes": false,
                     "UISceneConfigurations": [:]
-                ],
-                "CLAUDE_API_KEY": "$(CLAUDE_API_KEY)"
+                ]
             ]),
             resources: ["Example/Resources/**"],
             dependencies: [

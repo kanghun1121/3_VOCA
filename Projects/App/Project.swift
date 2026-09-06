@@ -15,7 +15,6 @@ let project = Project.makeModule(
                 ],
                 "SUPABASE_ANON_KEY": "$(SUPABASE_ANON_KEY)",
                 "MW_DICTIONARY_API_KEY": "$(MW_DICTIONARY_API_KEY)",
-                "CLAUDE_API_KEY": "$(CLAUDE_API_KEY)",
                 "ITSAppUsesNonExemptEncryption": false,
                 "PRIVACY_POLICY_URL": "https://maize-erica-237.notion.site/387a1c6f6ce080ba927ef413ffe4cfd4",
                 "UIAppFonts": [
