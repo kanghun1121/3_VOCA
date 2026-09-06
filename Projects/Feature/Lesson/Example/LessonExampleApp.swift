@@ -1,6 +1,6 @@
 import SwiftUI
 
-import FeatureSession
+import FeatureLesson
 
 import Dependencies
 
@@ -8,14 +8,20 @@ import Dependencies
 struct VocaExampleApp: App {
     init() {
         prepareDependencies {
-            $0.getSessionDetailUseCase = .previewValue
+            $0.loadLessonDetailUseCase.execute = { id in (lesson: .preview(id: id), audioReady: Task {}) }
+            $0.learningHistoryRepository.stream = { _ in
+                AsyncStream { continuation in
+                    continuation.yield(.preview)
+                    continuation.finish()
+                }
+            }
         }
     }
 
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                SessionDetailView(viewModel: SessionDetailViewModel(sessionID: "demo"))
+                LessonDetailView(viewModel: LessonDetailViewModel(lessonID: "demo"))
             }
         }
     }

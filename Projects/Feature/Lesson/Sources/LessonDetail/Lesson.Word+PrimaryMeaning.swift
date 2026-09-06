@@ -1,5 +1,5 @@
 import DomainInterface
 
-extension Session.Word {
+extension Lesson.Word {
     var primaryMeaning: String { definitions.first?.meaning ?? "" }
 }

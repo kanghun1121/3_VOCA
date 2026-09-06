@@ -4,7 +4,7 @@ import DesignSystem
 import DomainInterface
 
 struct WordPreviewSection: View {
-    let words: [Session.Word]
+    let words: [Lesson.Word]
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isExpanded = false
@@ -49,7 +49,7 @@ struct WordPreviewSection: View {
 }
 
 private struct WordPreviewRow: View {
-    let item: Session.Word
+    let item: Lesson.Word
 
     var body: some View {
         VStack(spacing: 0) {
@@ -60,7 +60,7 @@ private struct WordPreviewRow: View {
 }
 
 private struct WordPreviewRowContent: View {
-    let item: Session.Word
+    let item: Lesson.Word
 
     var body: some View {
         HStack {

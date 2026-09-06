@@ -1,4 +1,4 @@
-public struct Session: Equatable {
+public struct Lesson: Equatable {
     public struct Word: Equatable, Identifiable {
         public struct Definition: Equatable, Identifiable {
             public let id: String
@@ -40,73 +40,41 @@ public struct Session: Equatable {
         }
     }
 
-    public struct Record: Equatable {
-        public let firstCompletedAt: String
-        public let studyCount: Int
-
-        public init(
-            firstCompletedAt: String,
-            studyCount: Int
-        ) {
-            self.firstCompletedAt = firstCompletedAt
-            self.studyCount = studyCount
-        }
-    }
-
     public let id: String
     public let level: Int
-    public let sessionNumber: Int
+    public let lessonNumber: Int
     public let estimatedDurationMinutes: Int
     public let cefrLevel: String
     public let words: [Word]
-    public let record: Record?
 
     public init(
         id: String,
         level: Int,
-        sessionNumber: Int,
+        lessonNumber: Int,
         estimatedDurationMinutes: Int,
         cefrLevel: String,
-        words: [Word],
-        record: Record?
+        words: [Word]
     ) {
         self.id = id
         self.level = level
-        self.sessionNumber = sessionNumber
+        self.lessonNumber = lessonNumber
         self.estimatedDurationMinutes = estimatedDurationMinutes
         self.cefrLevel = cefrLevel
         self.words = words
-        self.record = record
     }
 }
 
 // MARK: - Preview Fixtures
 
-public extension Session {
-    static func previewWithRecord(id: String) -> Session {
-        Session(
+public extension Lesson {
+    static func preview(id: String) -> Lesson {
+        Lesson(
             id: id,
             level: 1,
-            sessionNumber: 2,
+            lessonNumber: 2,
             estimatedDurationMinutes: 15,
             cefrLevel: "A1-A2",
-            words: previewWords,
-            record: Record(
-                firstCompletedAt: "2026.05.01",
-                studyCount: 3
-            )
-        )
-    }
-
-    static func previewWithoutRecord(id: String) -> Session {
-        Session(
-            id: id,
-            level: 1,
-            sessionNumber: 2,
-            estimatedDurationMinutes: 15,
-            cefrLevel: "A1-A2",
-            words: previewWords,
-            record: nil
+            words: previewWords
         )
     }
 

@@ -8,7 +8,7 @@ let targets: [Target] = [
             .feature(implements: .chatBot),
             .feature(implements: .home),
             .feature(implements: .login),
-            .feature(implements: .session),
+            .feature(implements: .lesson),
             .feature(implements: .vocabulary),
             .feature(implements: .wordGame),
             .feature(implements: .myPage),

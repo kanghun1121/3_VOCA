@@ -1,22 +1,21 @@
 import DomainInterface
 
 extension SessionDetailResponseDTO {
-    func toDomain() -> Session {
-        Session(
+    func toDomain() -> Lesson {
+        Lesson(
             id: session.id,
             level: session.level,
-            sessionNumber: session.sessionNumber,
+            lessonNumber: session.sessionNumber,
             estimatedDurationMinutes: session.estimatedMinutes,
             cefrLevel: session.difficulty,
-            words: words.map { $0.toDomain() },
-            record: learningHistory?.toDomain()
+            words: words.map { $0.toDomain() }
         )
     }
 }
 
 private extension SessionDetailResponseDTO.Word {
-    func toDomain() -> Session.Word {
-        Session.Word(
+    func toDomain() -> Lesson.Word {
+        Lesson.Word(
             id: id,
             term: term,
             pronunciation: pronunciation,
@@ -28,20 +27,11 @@ private extension SessionDetailResponseDTO.Word {
 }
 
 private extension SessionDetailResponseDTO.Word.Definition {
-    func toDomain() -> Session.Word.Definition {
-        Session.Word.Definition(
+    func toDomain() -> Lesson.Word.Definition {
+        Lesson.Word.Definition(
             id: id,
             partOfSpeech: PartOfSpeech(rawValue: partOfSpeech) ?? .unknown,
             meaning: meaning
-        )
-    }
-}
-
-private extension SessionDetailResponseDTO.LearningHistory {
-    func toDomain() -> Session.Record {
-        Session.Record(
-            firstCompletedAt: firstCompletedAt,
-            studyCount: studyCount
         )
     }
 }

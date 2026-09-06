@@ -11,11 +11,6 @@ struct SessionDetailResponseDTO: Decodable {
         let difficulty: String
     }
 
-    struct LearningHistory: Decodable {
-        let firstCompletedAt: String
-        let studyCount: Int
-    }
-
     struct Word: Decodable {
         struct Definition: Decodable {
             let id: String
@@ -32,6 +27,5 @@ struct SessionDetailResponseDTO: Decodable {
     }
 
     let session: Metadata
-    let learningHistory: LearningHistory?
     let words: [Word]
 }

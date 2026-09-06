@@ -6,27 +6,29 @@ import FeatureWordGame
 
 import SwiftUINavigation
 
-public struct SessionDetailView: View {
-    @Bindable private var viewModel: SessionDetailViewModel
+public struct LessonDetailView: View {
+    @Bindable private var viewModel: LessonDetailViewModel
 
-    public init(viewModel: SessionDetailViewModel) {
+    public init(viewModel: LessonDetailViewModel) {
         _viewModel = Bindable(viewModel)
     }
 
     public var body: some View {
         Group {
-            switch viewModel.viewState {
+            switch viewModel.uiState {
             case .loading:
-                SessionDetailContentView(
-                    state: .previewWithRecord(id: "placeholder"),
+                LessonDetailContentView(
+                    state: .preview(id: "placeholder"),
+                    learningHistory: .preview,
                     onGameTapped: {},
                     onVocabularyListTapped: {}
                 )
                 .redacted(reason: .placeholder)
                 .allowsHitTesting(false)
             case .loaded(let state):
-                SessionDetailContentView(
+                LessonDetailContentView(
                     state: state,
+                    learningHistory: viewModel.learningHistory,
                     onGameTapped: viewModel.didTapGame,
                     onVocabularyListTapped: viewModel.didTapVocabularyList
                 )
@@ -36,7 +38,7 @@ public struct SessionDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .task { await viewModel.load() }
+        .task { await viewModel.onAppear() }
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(item: $viewModel.destination.vocabularyList) { vocabularyListVM in
             VocabularyListView(viewModel: vocabularyListVM)

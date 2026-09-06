@@ -2,9 +2,9 @@ import SwiftUI
 
 import DesignSystem
 
-struct SessionCell: View {
-    let sessionNumber: Int
-    let status: SessionCellStatus
+struct LessonCell: View {
+    let lessonNumber: Int
+    let status: LessonCellStatus
 
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
@@ -29,7 +29,7 @@ struct SessionCell: View {
                 .foregroundStyle(DesignSystemAsset.white.swiftUIColor)
                 .accessibilityHidden(true)
         case .current, .todo:
-            Text("\(sessionNumber)")
+            Text("\(lessonNumber)")
                 .font(DesignSystemFontFamily.Pretendard.extraBold.swiftUIFont(size: 12))
                 .foregroundStyle(DesignSystemAsset.lock.swiftUIColor)
                 .monospacedDigit()

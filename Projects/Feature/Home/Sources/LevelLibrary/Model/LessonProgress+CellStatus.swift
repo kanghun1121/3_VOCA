@@ -1,11 +1,11 @@
 import DomainInterface
 
-extension [SessionProgress] {
+extension [LessonProgress] {
     /// 완료된 세션은 done, 완료되지 않은 첫 세션은 current, 나머지는 todo로 표시.
-    var cellStatuses: [SessionCellStatus] {
+    var cellStatuses: [LessonCellStatus] {
         var currentAssigned = false
-        return map { session in
-            if session.status == .completed {
+        return map { lesson in
+            if lesson.status == .completed {
                 return .done
             } else if !currentAssigned {
                 currentAssigned = true

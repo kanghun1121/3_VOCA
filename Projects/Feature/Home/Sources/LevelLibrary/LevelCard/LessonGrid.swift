@@ -2,32 +2,32 @@ import SwiftUI
 
 import DomainInterface
 
-struct SessionGrid: View {
-    let sessions: [SessionProgress]
-    let onSessionTapped: (String) -> Void
+struct LessonGrid: View {
+    let lessons: [LessonProgress]
+    let onLessonTapped: (String) -> Void
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 7), count: 6)
 
     var body: some View {
-        let statuses = sessions.cellStatuses
+        let statuses = lessons.cellStatuses
         LazyVGrid(columns: columns, spacing: 7) {
-            ForEach(Array(zip(sessions, statuses)), id: \.0.id) { session, status in
+            ForEach(Array(zip(lessons, statuses)), id: \.0.id) { lesson, status in
                 Button {
-                    onSessionTapped(session.id)
+                    onLessonTapped(lesson.id)
                 } label: {
-                    SessionCell(sessionNumber: session.sessionNumber, status: status)
+                    LessonCell(lessonNumber: lesson.lessonNumber, status: status)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(makeAccessibilityLabel(sessionNumber: session.sessionNumber, status: status))
+                .accessibilityLabel(makeAccessibilityLabel(lessonNumber: lesson.lessonNumber, status: status))
             }
         }
     }
 
-    private func makeAccessibilityLabel(sessionNumber: Int, status: SessionCellStatus) -> String {
+    private func makeAccessibilityLabel(lessonNumber: Int, status: LessonCellStatus) -> String {
         switch status {
-        case .done: "\(sessionNumber)번 세션, 완료"
-        case .current: "\(sessionNumber)번 세션, 진행 중"
-        case .todo: "\(sessionNumber)번 세션, 잠김"
+        case .done: "\(lessonNumber)번 세션, 완료"
+        case .current: "\(lessonNumber)번 세션, 진행 중"
+        case .todo: "\(lessonNumber)번 세션, 잠김"
         }
     }
 }
