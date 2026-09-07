@@ -43,7 +43,6 @@ public struct Lesson: Equatable {
     public let id: String
     public let level: Int
     public let lessonNumber: Int
-    public let estimatedDurationMinutes: Int
     public let cefrLevel: String
     public let words: [Word]
 
@@ -51,14 +50,12 @@ public struct Lesson: Equatable {
         id: String,
         level: Int,
         lessonNumber: Int,
-        estimatedDurationMinutes: Int,
         cefrLevel: String,
         words: [Word]
     ) {
         self.id = id
         self.level = level
         self.lessonNumber = lessonNumber
-        self.estimatedDurationMinutes = estimatedDurationMinutes
         self.cefrLevel = cefrLevel
         self.words = words
     }
@@ -72,7 +69,6 @@ public extension Lesson {
             id: id,
             level: 1,
             lessonNumber: 2,
-            estimatedDurationMinutes: 15,
             cefrLevel: "A1-A2",
             words: previewWords
         )

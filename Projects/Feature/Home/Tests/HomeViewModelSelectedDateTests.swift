@@ -40,32 +40,20 @@ final class HomeViewModelSelectedDateTests: XCTestCase {
         let yesterday = cal.date(byAdding: .day, value: -1, to: today)!
         // lastStudiedAt은 어제 오후 3시 — startOfDay 정규화로 어제 "하루" 전체에 매칭돼야 한다.
         let studiedAt = cal.date(byAdding: .hour, value: 15, to: yesterday)!
-        let library = VocabularyLibrary(levels: [
-            LevelSummary(
-                id: "level_1",
-                level: 1,
-                name: "Level 1",
-                difficulty: "A1",
-                totalLessons: 1,
-                completedLessons: 1,
-                lessons: [
-                    LessonProgress(
-                        id: "session_1",
-                        lessonNumber: 1,
-                        totalWords: 10,
-                        status: .completed,
-                        lastStudiedAt: studiedAt,
-                        accuracy: 1.0,
-                        wordsCompleted: 10
-                    )
-                ]
+        let records = [
+            LessonCompletionRecord(
+                lessonID: "session_1",
+                levelName: "Level 1",
+                lessonNumber: 1,
+                totalWords: 10,
+                lastStudiedAt: studiedAt
             ),
-        ])
+        ]
 
         let vm = withDependencies {
-            $0.vocabularyLibraryRepository.stream = {
+            $0.learningHistoryRepository.streamAllCompletions = {
                 AsyncStream { continuation in
-                    continuation.yield(library)
+                    continuation.yield(records)
                     continuation.finish()
                 }
             }
@@ -83,7 +71,7 @@ final class HomeViewModelSelectedDateTests: XCTestCase {
 
     func test_selectedDayRecords_기록이_없는_날짜를_선택하면_빈_배열을_반환한다() async {
         let vm = withDependencies {
-            $0.vocabularyLibraryRepository = .previewValue
+            $0.learningHistoryRepository = .previewValue
         } operation: {
             HomeViewModel(today: today)
         }

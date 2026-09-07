@@ -1,40 +1,28 @@
 import Foundation
 
 import DomainInterface
-import NetworkingInterface
 
 import Dependencies
 
 extension ChatRepository: DependencyKey {
-    private static let model = "claude-sonnet-5"
-    private static let maxTokens = 2048
-
-    public static let liveValue: ChatRepository = {
-        @Dependency(\.sseClient) var sseClient
-        return ChatRepository(
-            streamMessage: { message in
-                AsyncThrowingStream { continuation in
-                    let task = Task {
-                        let request = ClaudeMessagesRequest(
-                            model: Self.model,
-                            maxTokens: Self.maxTokens,
-                            messages: [ClaudeChatMessage(role: "user", content: message)]
-                        )
-                        let frames = sseClient.stream(request)
-                        do {
-                            for try await event in ClaudeSSEParser.parse(frames: frames) {
-                                if case let .textDelta(text) = event {
-                                    continuation.yield(text)
-                                }
+    public static let liveValue = ChatRepository(
+        streamMessage: { message in
+            AsyncThrowingStream { continuation in
+                let task = Task {
+                    @Dependency(\.chatBotRemoteDataSource) var remote
+                    do {
+                        for try await event in remote.streamEvents(message: message) {
+                            if case let .textDelta(text) = event {
+                                continuation.yield(text)
                             }
-                            continuation.finish()
-                        } catch {
-                            continuation.finish(throwing: error)
                         }
+                        continuation.finish()
+                    } catch {
+                        continuation.finish(throwing: error)
                     }
-                    continuation.onTermination = { _ in task.cancel() }
                 }
+                continuation.onTermination = { _ in task.cancel() }
             }
-        )
-    }()
+        }
+    )
 }

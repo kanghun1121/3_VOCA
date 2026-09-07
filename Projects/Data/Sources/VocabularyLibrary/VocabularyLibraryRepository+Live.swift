@@ -1,20 +1,32 @@
 import Foundation
 
 import DomainInterface
-import NetworkingInterface
 
 import Dependencies
 
-private func fetchVocabularyLibraryFromNetwork() async throws -> VocabularyLibrary {
-    @Dependency(\.authenticatedHTTPClient) var client
-    let request = GetAllLevelsWithSessionsRequest()
-    let dto: VocabularyLibraryResponseDTO = try await client.request(request)
-    return dto.toDomain()
+/// 정적 구조(레벨 이름/난이도/레슨 번호/레슨당 단어 수)는 로컬 시드에서 조립한다 — 이 조립을
+/// 전담하는 별도 타입은 만들지 않는다. Level+Lesson을 조합하는 소비자가 이 함수 하나뿐이라
+/// 새 타입을 추가하면 "DataSource를 조합하는 DataSource"라는 불필요한 중복이 생긴다.
+// internal(비공개 아님) — 로컬 스켈레톤 조립 로직을 독립적으로 테스트하기 위해 노출한다.
+func localSkeleton() async throws -> [LevelSummary] {
+    @Dependency(\.levelLocalDataSource) var level
+    @Dependency(\.lessonLocalDataSource) var lesson
+
+    var summaries: [LevelSummary] = []
+    for entity in try await level.allLevels() {
+        let lessons = try await lesson.lessons(levelID: entity.id)
+        summaries.append(entity.toStaticSummary(lessons: lessons))
+    }
+    return summaries
 }
 
 private func refreshVocabularyLibrary(store: VocabularyLibraryStore) async throws {
-    let library = try await fetchVocabularyLibraryFromNetwork()
-    await store.set(library)
+    @Dependency(\.vocabularyLibraryRemoteDataSource) var remote
+
+    let local = try await localSkeleton()
+    let remoteDTO = try await remote.fetchLibrary()
+    let merged = VocabularyLibraryMerge.mergeProgress(local: local, remote: remoteDTO.toDomain())
+    await store.set(merged)
 }
 
 extension VocabularyLibraryRepository: DependencyKey {
@@ -29,9 +41,6 @@ extension VocabularyLibraryRepository: DependencyKey {
                     }
                     Task {
                         await store.register(id: id, continuation: continuation)
-                        // 등록 직후, 마지막으로 한 번 최신 데이터를 가져온다 — 스트림엔 에러
-                        // 채널이 없으므로 실패는 조용히 무시한다(캐시가 없으면 uiState는
-                        // .loading에 머무른다).
                         try? await refreshVocabularyLibrary(store: store)
                     }
                 }

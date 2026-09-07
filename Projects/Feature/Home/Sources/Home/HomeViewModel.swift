@@ -9,23 +9,15 @@ import SwiftUINavigation
 @Observable
 @MainActor
 public final class HomeViewModel {
-    enum HomeUIState: Equatable {
-        case loading
-        case success(VocabularyLibrary)
-        case error(String)
-        case empty
-    }
-    
     @CasePathable
     public enum Destination {
         case lesson(LessonDetailViewModel)
         case levelLibrary(LevelLibraryViewModel)
     }
-    
+
     var destination: Destination?
-    
+
     let today: Date
-    private(set) var uiState: HomeUIState = .loading
     private(set) var dayRecordsByDate: [Date: [DayRecord]] = [:]
     private(set) var selectedDate: Date
     @ObservationIgnored private(set) var observationTask: Task<Void, Never>?
@@ -35,7 +27,7 @@ public final class HomeViewModel {
     var selectedDayRecords: [DayRecord] { dayRecordsByDate[cal.startOfDay(for: selectedDate)] ?? [] }
     private var cal: Calendar { .current }
     
-    @ObservationIgnored @Dependency(\.vocabularyLibraryRepository) private var vocabularyLibraryRepository
+    @ObservationIgnored @Dependency(\.learningHistoryRepository) private var learningHistoryRepository
 
     public init(
         destination: Destination? = nil,
@@ -50,8 +42,8 @@ public final class HomeViewModel {
         guard observationTask == nil else { return }
 
         observationTask = Task {
-            for await library in vocabularyLibraryRepository.stream() {
-                self.apply(library)
+            for await records in learningHistoryRepository.streamAllCompletions() {
+                self.apply(records)
             }
         }
     }
@@ -72,9 +64,8 @@ public final class HomeViewModel {
         destination = .levelLibrary(LevelLibraryViewModel())
     }
     
-    private func apply(_ library: VocabularyLibrary) {
-        dayRecordsByDate = library.dayRecords(calendar: cal)
-        uiState = library.levels.isEmpty ? .empty : .success(library)
+    private func apply(_ records: [LessonCompletionRecord]) {
+        dayRecordsByDate = records.dayRecords(calendar: cal)
     }
 
     deinit {

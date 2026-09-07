@@ -15,8 +15,7 @@ struct LessonDetailContentView: View {
                 LessonHeaderSection(
                     level: state.level,
                     lessonNumber: state.lessonNumber,
-                    wordCount: state.words.count,
-                    estimatedDurationMinutes: state.estimatedDurationMinutes
+                    wordCount: state.words.count
                 )
                 RecordCard(record: learningHistory)
                 WordPreviewSection(words: state.words)

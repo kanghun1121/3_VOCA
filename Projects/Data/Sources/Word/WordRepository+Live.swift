@@ -1,36 +1,25 @@
 import Foundation
 
 import DomainInterface
-import NetworkingInterface
 
 import Dependencies
 
 extension WordRepository: DependencyKey {
-    public static let liveValue: WordRepository = {
-        @Dependency(\.authenticatedHTTPClient) var http
-        let cache = WordDetailCache()
-        return WordRepository(
-            fetchDetail: { id in
-                if let cached = await cache.get(id) { return cached }
-                let request = GetWordDetailRequest(wordID: id)
-                let dto: WordDetailResponseDTO = try await http.request(request)
-                let detail = dto.toDomain()
-                await cache.set(id, detail)
-                return detail
-            },
-            prefetchDetails: { ids in
-                await withTaskGroup(of: Void.self) { group in
-                    for id in ids {
-                        group.addTask {
-                            guard await cache.get(id) == nil else { return }
-                            guard let dto: WordDetailResponseDTO = try? await http.request(
-                                GetWordDetailRequest(wordID: id)
-                            ) else { return }
-                            await cache.set(id, dto.toDomain())
-                        }
-                    }
-                }
-            }
-        )
-    }()
+    public static let liveValue = WordRepository(
+        fetchDetail: { id in
+            @Dependency(\.wordLocalDataSource) var wordLocalDataSource
+            return try await wordLocalDataSource.wordDetail(id: numericID(from: id))
+        },
+        prefetchDetails: { _ in
+            // 로컬 DB 조회는 네트워크 왕복이 없어 "미리 당겨오기"가 더 이상 의미가 없다.
+        }
+    )
+}
+
+// "word_766" → 766, "766" → 766
+private func numericID(from id: String) throws -> Int {
+    guard let value = Int(id.components(separatedBy: "_").last ?? id) else {
+        throw LocalDatabaseError.invalidWordID(id)
+    }
+    return value
 }

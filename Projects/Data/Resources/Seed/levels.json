@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name_ko": "씨앗",
+    "name_en": "Elementary",
+    "cefr_label": "A1",
+    "description": "초등 1~3학년 수준",
+    "sort_order": 1
+  },
+  {
+    "id": 2,
+    "name_ko": "새싹",
+    "name_en": "Pre-Intermediate",
+    "cefr_label": "A2",
+    "description": "초등 4~6학년 수준",
+    "sort_order": 2
+  },
+  {
+    "id": 3,
+    "name_ko": "성장",
+    "name_en": "Intermediate",
+    "cefr_label": "B1",
+    "description": "중학생 수준",
+    "sort_order": 3
+  },
+  {
+    "id": 4,
+    "name_ko": "도약",
+    "name_en": "Upper-Intermediate",
+    "cefr_label": "B2",
+    "description": "고등/수능 기초 수준",
+    "sort_order": 4
+  },
+  {
+    "id": 5,
+    "name_ko": "정상",
+    "name_en": "Advanced",
+    "cefr_label": "C1",
+    "description": "수능 심화 / 토플 수준",
+    "sort_order": 5
+  },
+  {
+    "id": 6,
+    "name_ko": "완성",
+    "name_en": "Mastery",
+    "cefr_label": "C2",
+    "description": "고급 / 원어민 수준",
+    "sort_order": 6
+  }
+]

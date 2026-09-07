@@ -10,8 +10,7 @@ extension AudioRepository: DependencyKey {
         prefetch: { words in
             @Dependency(\.audioMemoryCache) var memory
             @Dependency(\.audioDiskCache) var disk
-            @Dependency(\.httpClient) var httpClient
-            let remote = AudioRemoteSource(httpClient: httpClient)
+            @Dependency(\.audioRemoteDataSource) var remote
 
             await withTaskGroup(of: Void.self) { group in
                 for (term, audioUrlString) in words {
@@ -32,8 +31,7 @@ extension AudioRepository: DependencyKey {
         fetchURL: { term, audioUrlString in
             @Dependency(\.audioMemoryCache) var memory
             @Dependency(\.audioDiskCache) var disk
-            @Dependency(\.httpClient) var httpClient
-            let remote = AudioRemoteSource(httpClient: httpClient)
+            @Dependency(\.audioRemoteDataSource) var remote
 
             if let cached = await memory.url(for: term) { return cached }
             if let diskURL = disk.url(for: term) {

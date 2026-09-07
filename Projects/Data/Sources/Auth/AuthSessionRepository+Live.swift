@@ -1,6 +1,5 @@
 import Foundation
 
-import Core
 import DomainInterface
 import NetworkingInterface
 
@@ -29,7 +28,6 @@ private actor AccessTokenStore {
 extension AuthSessionRepository: DependencyKey {
     public static let liveValue: AuthSessionRepository = {
         let store = AccessTokenStore()
-        @Dependency(\.keychainClient) var keychain
         let (stream, continuation) = AsyncStream<AuthState>.makeStream()
         return AuthSessionRepository(
             getAccessToken: { await store.value },
@@ -37,41 +35,49 @@ extension AuthSessionRepository: DependencyKey {
                 await store.set($0)
                 continuation.yield(.authenticated)
             },
-            getRefreshToken: { try keychain.load(.refreshToken) },
-            setRefreshToken: { try keychain.save(.refreshToken, $0) },
+            getRefreshToken: {
+                @Dependency(\.authLocalDataSource) var local
+                return try local.loadRefreshToken()
+            },
+            setRefreshToken: {
+                @Dependency(\.authLocalDataSource) var local
+                try local.saveRefreshToken($0)
+            },
             clear: {
+                @Dependency(\.authLocalDataSource) var local
                 await store.clear()
-                // yield 먼저 — keychain.delete 실패 시에도 stream이 막히지 않도록
+                // yield 먼저 — keychain 삭제 실패 시에도 stream이 막히지 않도록
                 continuation.yield(.unauthenticated)
-                try keychain.delete(.refreshToken)
+                try local.deleteRefreshToken()
             },
             deleteAccount: {
                 guard let token = await store.value else {
                     throw NetworkError.invalidRequest
                 }
-                @Dependency(\.httpClient) var httpClient
-                try await httpClient.request(DeleteAccountRequest(accessToken: token))
+                @Dependency(\.authSessionRemoteDataSource) var remote
+                @Dependency(\.authLocalDataSource) var local
+                try await remote.deleteAccount(accessToken: token)
                 await store.clear()
                 continuation.yield(.unauthenticated)
-                try keychain.delete(.refreshToken)
+                try local.deleteRefreshToken()
             },
             refreshAccessToken: {
-                @Dependency(\.httpClient) var httpClient
+                @Dependency(\.authSessionRemoteDataSource) var remote
+                @Dependency(\.authLocalDataSource) var local
 
                 return await store.refresh {
                     do {
-                        let refreshToken = try keychain.load(.refreshToken)
-                        let request = RefreshTokenRequest(refreshToken: refreshToken)
-                        let dto: AuthTokenResponseDTO = try await httpClient.request(request)
+                        let refreshToken = try local.loadRefreshToken()
+                        let dto = try await remote.refreshToken(refreshToken)
                         let token = dto.toDomain()
                         await store.set(token.accessToken)
                         continuation.yield(.authenticated)
-                        try keychain.save(.refreshToken, token.refreshToken)
+                        try local.saveRefreshToken(token.refreshToken)
                         return true
                     } catch {
                         await store.clear()
                         continuation.yield(.unauthenticated)
-                        try? keychain.delete(.refreshToken)
+                        try? local.deleteRefreshToken()
                         return false
                     }
                 }

@@ -1,10 +1,8 @@
 import SwiftUI
 
 import DesignSystem
-import DomainInterface
 
 struct HomeContentView: View {
-    let state: VocabularyLibrary
     let viewModel: HomeViewModel
 
     var body: some View {
@@ -72,5 +70,5 @@ struct HomeContentView: View {
 }
 
 #Preview {
-    HomeContentView(state: .previewFixture, viewModel: HomeViewModel())
+    HomeContentView(viewModel: HomeViewModel())
 }
