@@ -9,9 +9,9 @@ extension ChatRepository: DependencyKey {
         streamMessage: { message in
             AsyncThrowingStream { continuation in
                 let task = Task {
-                    @Dependency(\.chatBotRemoteDataSource) var remote
+                    @Dependency(\.chatBotRemoteDataSource) var remoteDataSource
                     do {
-                        for try await event in remote.streamEvents(message: message) {
+                        for try await event in remoteDataSource.streamEvents(message: message) {
                             if case let .textDelta(text) = event {
                                 continuation.yield(text)
                             }

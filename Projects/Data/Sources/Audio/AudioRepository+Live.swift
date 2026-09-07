@@ -8,49 +8,49 @@ import Dependencies
 extension AudioRepository: DependencyKey {
     public static let liveValue = AudioRepository(
         prefetch: { words in
-            @Dependency(\.audioMemoryCache) var memory
-            @Dependency(\.audioDiskCache) var disk
-            @Dependency(\.audioRemoteDataSource) var remote
+            @Dependency(\.audioMemoryCache) var memoryCache
+            @Dependency(\.audioDiskCache) var diskCache
+            @Dependency(\.audioRemoteDataSource) var remoteDataSource
 
             await withTaskGroup(of: Void.self) { group in
                 for (term, audioUrlString) in words {
                     group.addTask {
-                        if await memory.url(for: term) != nil { return }
-                        if let diskURL = disk.url(for: term) {
-                            await memory.markReady(term, url: diskURL)
+                        if await memoryCache.url(for: term) != nil { return }
+                        if let diskURL = diskCache.url(for: term) {
+                            await memoryCache.markReady(term, url: diskURL)
                             return
                         }
                         guard let remoteURL = URL(string: audioUrlString) else { return }
-                        guard let data = try? await remote.download(from: remoteURL) else { return }
-                        guard let fileURL = try? disk.store(data, for: term) else { return }
-                        await memory.markReady(term, url: fileURL)
+                        guard let data = try? await remoteDataSource.download(from: remoteURL) else { return }
+                        guard let fileURL = try? diskCache.store(data, for: term) else { return }
+                        await memoryCache.markReady(term, url: fileURL)
                     }
                 }
             }
         },
         fetchURL: { term, audioUrlString in
-            @Dependency(\.audioMemoryCache) var memory
-            @Dependency(\.audioDiskCache) var disk
-            @Dependency(\.audioRemoteDataSource) var remote
+            @Dependency(\.audioMemoryCache) var memoryCache
+            @Dependency(\.audioDiskCache) var diskCache
+            @Dependency(\.audioRemoteDataSource) var remoteDataSource
 
-            if let cached = await memory.url(for: term) { return cached }
-            if let diskURL = disk.url(for: term) {
-                await memory.markReady(term, url: diskURL)
+            if let cached = await memoryCache.url(for: term) { return cached }
+            if let diskURL = diskCache.url(for: term) {
+                await memoryCache.markReady(term, url: diskURL)
                 return diskURL
             }
             guard let remoteURL = URL(string: audioUrlString) else { return nil }
-            guard let data = try? await remote.download(from: remoteURL) else { return nil }
-            guard let fileURL = try? disk.store(data, for: term) else { return nil }
-            await memory.markReady(term, url: fileURL)
+            guard let data = try? await remoteDataSource.download(from: remoteURL) else { return nil }
+            guard let fileURL = try? diskCache.store(data, for: term) else { return nil }
+            await memoryCache.markReady(term, url: fileURL)
             return fileURL
         },
         url: { term in
-            @Dependency(\.audioMemoryCache) var memory
-            @Dependency(\.audioDiskCache) var disk
+            @Dependency(\.audioMemoryCache) var memoryCache
+            @Dependency(\.audioDiskCache) var diskCache
 
-            if let cached = await memory.url(for: term) { return cached }
-            guard let diskURL = disk.url(for: term) else { return nil }
-            await memory.markReady(term, url: diskURL)
+            if let cached = await memoryCache.url(for: term) { return cached }
+            guard let diskURL = diskCache.url(for: term) else { return nil }
+            await memoryCache.markReady(term, url: diskURL)
             return diskURL
         }
     )
