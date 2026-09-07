@@ -10,7 +10,7 @@ struct ChatProxyRequest: Requestable {
     let maxTokens: Int
     let messages: [ChatProxyMessage]
 
-    var baseURL: URL { ChatProxyConfig.baseURL }
+    var baseURL: URL { SupabaseConfig.baseURL }
     var path: String { "functions/v1/chat" }
     var method: HTTPMethod { .post }
     var bodyParameters: HTTPBody { .json(ChatProxyRequestBody(model: model, maxTokens: maxTokens, messages: messages)) }
