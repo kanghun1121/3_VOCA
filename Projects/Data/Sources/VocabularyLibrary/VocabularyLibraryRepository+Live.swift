@@ -21,14 +21,13 @@ func localSkeleton() async throws -> [LevelSummary] {
 }
 
 private func refreshVocabularyLibrary(store: VocabularyLibraryStore) async throws {
-    @Dependency(\.vocabularyLibraryRemoteDataSource) var remote
-
     let local = try await localSkeleton()
-    let remoteDTO = try await remote.fetchLibrary()
-    let merged = VocabularyLibraryMerge.mergeProgress(local: local, remote: remoteDTO.toDomain())
-    await store.set(merged)
+    await store.set(VocabularyLibrary(levels: local))
 }
 
+/// Level/Lesson 콘텐츠가 전부 로컬 시드로 제공되므로 원격 진행 상태 병합은 더 이상 하지
+/// 않는다. `VocabularyLibraryRemoteDataSource`/`VocabularyLibraryMerge`는 지금은 어디서도
+/// 호출하지 않는 죽은 코드로 남겨둔다 — 서버 진행 상태 동기화가 다시 필요해지면 그때 다시 연결한다.
 extension VocabularyLibraryRepository: DependencyKey {
     public static let liveValue: VocabularyLibraryRepository = {
         let store = VocabularyLibraryStore()
