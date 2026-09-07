@@ -43,7 +43,6 @@ extension LearningHistoryRepository: DependencyKey {
                         await feedStore.register(id: id, continuation: continuation)
 
                         guard let completions = try? await historyDataSource.allCompletions() else { return }
-                        print("--------")
                         var records: [LessonCompletionRecord] = []
                         for entity in completions {
                             guard let lessonEntity = try? await lessonDataSource.lesson(id: entity.lessonID),
@@ -57,7 +56,6 @@ extension LearningHistoryRepository: DependencyKey {
                             ))
                         }
 
-                        print(records)
                         await feedStore.set(records)
                     }
                 }
@@ -65,6 +63,7 @@ extension LearningHistoryRepository: DependencyKey {
             complete: { lessonID in
                 try await historyDataSource.recordCompletion(lessonID: lessonID, at: Date())
 
+                // TODO: 아래 2개는 함수로 분리.
                 // Home 캘린더 구독자에게 갱신된 전체 목록을 push한다.
                 if let completions = try? await historyDataSource.allCompletions() {
                     var records: [LessonCompletionRecord] = []
