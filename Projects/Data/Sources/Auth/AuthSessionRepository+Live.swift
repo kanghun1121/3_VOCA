@@ -36,48 +36,48 @@ extension AuthSessionRepository: DependencyKey {
                 continuation.yield(.authenticated)
             },
             getRefreshToken: {
-                @Dependency(\.authLocalDataSource) var local
-                return try local.loadRefreshToken()
+                @Dependency(\.authLocalDataSource) var localDataSource
+                return try localDataSource.loadRefreshToken()
             },
             setRefreshToken: {
-                @Dependency(\.authLocalDataSource) var local
-                try local.saveRefreshToken($0)
+                @Dependency(\.authLocalDataSource) var localDataSource
+                try localDataSource.saveRefreshToken($0)
             },
             clear: {
-                @Dependency(\.authLocalDataSource) var local
+                @Dependency(\.authLocalDataSource) var localDataSource
                 await store.clear()
                 // yield 먼저 — keychain 삭제 실패 시에도 stream이 막히지 않도록
                 continuation.yield(.unauthenticated)
-                try local.deleteRefreshToken()
+                try localDataSource.deleteRefreshToken()
             },
             deleteAccount: {
                 guard let token = await store.value else {
                     throw NetworkError.invalidRequest
                 }
-                @Dependency(\.authSessionRemoteDataSource) var remote
-                @Dependency(\.authLocalDataSource) var local
-                try await remote.deleteAccount(accessToken: token)
+                @Dependency(\.authSessionRemoteDataSource) var remoteDataSource
+                @Dependency(\.authLocalDataSource) var localDataSource
+                try await remoteDataSource.deleteAccount(accessToken: token)
                 await store.clear()
                 continuation.yield(.unauthenticated)
-                try local.deleteRefreshToken()
+                try localDataSource.deleteRefreshToken()
             },
             refreshAccessToken: {
-                @Dependency(\.authSessionRemoteDataSource) var remote
-                @Dependency(\.authLocalDataSource) var local
+                @Dependency(\.authSessionRemoteDataSource) var remoteDataSource
+                @Dependency(\.authLocalDataSource) var localDataSource
 
                 return await store.refresh {
                     do {
-                        let refreshToken = try local.loadRefreshToken()
-                        let dto = try await remote.refreshToken(refreshToken)
+                        let refreshToken = try localDataSource.loadRefreshToken()
+                        let dto = try await remoteDataSource.refreshToken(refreshToken)
                         let token = dto.toDomain()
                         await store.set(token.accessToken)
                         continuation.yield(.authenticated)
-                        try local.saveRefreshToken(token.refreshToken)
+                        try localDataSource.saveRefreshToken(token.refreshToken)
                         return true
                     } catch {
                         await store.clear()
                         continuation.yield(.unauthenticated)
-                        try? local.deleteRefreshToken()
+                        try? localDataSource.deleteRefreshToken()
                         return false
                     }
                 }
