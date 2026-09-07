@@ -11,7 +11,7 @@ struct WordGameExampleApp: App {
         prepareDependencies {
             $0.lessonRepository.fetchDetail = { id in .previewWith3Words(id: id) }
             $0.audioRepository.prefetch = { _ in }
-            $0.learningHistoryRepository.complete = { _ in }
+            $0.completeLessonUseCase = .previewValue
         }
     }
 

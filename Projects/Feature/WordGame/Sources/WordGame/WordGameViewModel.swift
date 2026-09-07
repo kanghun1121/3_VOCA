@@ -33,7 +33,7 @@ public final class WordGameViewModel {
 
     @ObservationIgnored @Dependency(\.lessonRepository) private var lessonRepository
     @ObservationIgnored @Dependency(\.audioRepository) private var audioRepository
-    @ObservationIgnored @Dependency(\.learningHistoryRepository) private var learningHistoryRepository
+    @ObservationIgnored @Dependency(\.completeLessonUseCase) private var completeLessonUseCase
 
     public init(
         lessonID: String,
@@ -118,7 +118,7 @@ public final class WordGameViewModel {
         finishGameTask = Task { [weak self] in
             guard let self else { return }
             if let id = Int(lessonID) {
-                try? await learningHistoryRepository.complete(id)
+                try? await completeLessonUseCase.execute(id)
             }
             dismiss = true
         }
