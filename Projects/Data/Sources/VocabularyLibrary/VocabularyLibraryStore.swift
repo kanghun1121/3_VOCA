@@ -2,6 +2,8 @@ import Foundation
 
 import DomainInterface
 
+import Dependencies
+
 /// `VocabularyLibrary`의 최신 스냅샷을 들고 있다가 다수의 구독자에게 브로드캐스트하는 Store.
 /// 신규 구독은 등록 즉시 현재 값을 replay 받고, 이후 `set`이 호출될 때마다 모든 구독자가 갱신을 받는다.
 actor VocabularyLibraryStore {
@@ -27,5 +29,16 @@ actor VocabularyLibraryStore {
         for continuation in continuations.values {
             continuation.yield(newValue)
         }
+    }
+}
+
+extension VocabularyLibraryStore: DependencyKey {
+    static let liveValue = VocabularyLibraryStore()
+}
+
+extension DependencyValues {
+    var vocabularyLibraryStore: VocabularyLibraryStore {
+        get { self[VocabularyLibraryStore.self] }
+        set { self[VocabularyLibraryStore.self] = newValue }
     }
 }
