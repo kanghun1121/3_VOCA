@@ -27,7 +27,7 @@ final class WordGameViewModelTests: XCTestCase {
         }
     }
 
-    func test_게임이_끝났을때_learningHistoryRepository의_complete가_호출되고_dismiss된다() async {
+    func test_게임이_끝났을때_completeLessonUseCase가_호출되고_dismiss된다() async {
         let word = Lesson.Word(
             id: "w1",
             term: "cat",
@@ -50,7 +50,7 @@ final class WordGameViewModelTests: XCTestCase {
         await withDependencies {
             $0.lessonRepository.fetchDetail = { _ in lesson }
             $0.audioRepository.prefetch = { _ in }
-            $0.learningHistoryRepository.complete = { id in await recorder.record(id) }
+            $0.completeLessonUseCase.execute = { id in await recorder.record(id) }
             $0.soundClient = .previewValue
         } operation: {
             let vm = WordGameViewModel(

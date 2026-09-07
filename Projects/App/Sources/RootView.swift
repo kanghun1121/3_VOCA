@@ -18,6 +18,7 @@ struct RootView: View {
     @State private var viewModel = withDependencies {
         $0.checkAuthSessionUseCase = .liveValue
         $0.refreshAuthSessionUseCase = .liveValue
+        $0.completeLessonUseCase = .liveValue
         $0.authSessionRepository = .liveValue
         $0.authRepository = .liveValue
         $0.vocabularyLibraryRepository = .liveValue
