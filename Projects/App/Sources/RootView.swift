@@ -23,7 +23,9 @@ struct RootView: View {
         $0.vocabularyLibraryRepository = .liveValue
         $0.lessonRepository = .liveValue
         $0.learningHistoryRepository = .liveValue
+        $0.chatRepository = .liveValue
         $0.wordRepository = .liveValue
+        $0.localDatabaseSeeding = .liveValue
         $0.audioRepository = .liveValue
         $0.audioPlayerRepository = .liveValue
         $0.tokenProvider = .liveValue
@@ -36,7 +38,7 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if viewModel.isCheckingSession {
+            if viewModel.isCheckingSession || viewModel.isSeedingDatabase {
                 SplashView()
             } else {
                 switch viewModel.authState {

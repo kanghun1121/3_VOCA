@@ -14,26 +14,14 @@ public struct HomeView: View {
 
     public var body: some View {
         NavigationStack {
-            Group {
-                switch viewModel.uiState {
-                case .loading:
-                    HomeLoadingView()
-                case .success(let library):
-                    HomeContentView(state: library, viewModel: viewModel)
-                case .error(let message):
-                    ContentUnavailableView(message, systemImage: "exclamationmark.triangle")
-                case .empty:
-                    HomeEmptyView()
+            HomeContentView(viewModel: viewModel)
+                .task { await viewModel.onAppear() }
+                .navigationDestination(item: $viewModel.destination.lesson) { detailVM in
+                    LessonDetailView(viewModel: detailVM)
                 }
-            }
-            .animation(.easeInOut(duration: 0.15), value: viewModel.uiState)
-            .task { await viewModel.onAppear() }
-            .navigationDestination(item: $viewModel.destination.lesson) { detailVM in
-                LessonDetailView(viewModel: detailVM)
-            }
-            .navigationDestination(item: $viewModel.destination.levelLibrary) { libraryVM in
-                LevelLibraryView(viewModel: libraryVM)
-            }
+                .navigationDestination(item: $viewModel.destination.levelLibrary) { libraryVM in
+                    LevelLibraryView(viewModel: libraryVM)
+                }
         }
         .tint(DesignSystemAsset.fgStrong.swiftUIColor)
         .toolbar(viewModel.destination != nil ? .hidden : .visible, for: .tabBar)
@@ -42,8 +30,4 @@ public struct HomeView: View {
 
 #Preview("홈") {
     HomeView(viewModel: HomeViewModel())
-}
-
-#Preview("로딩") {
-    HomeLoadingView()
 }

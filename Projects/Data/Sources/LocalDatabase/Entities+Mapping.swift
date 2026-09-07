@@ -1,0 +1,116 @@
+import Foundation
+
+import DomainInterface
+
+// MARK: - WordDetail
+
+extension WordEntity {
+    /// `meanings`는 rank 오름차순, `examples`는 order 오름차순으로 정렬되어 들어온다고 가정한다
+    /// (정렬은 `WordLocalDataSource`의 조회 메서드 책임).
+    func toWordDetail(meanings: [WordMeaningEntity], examples: [WordExampleEntity]) -> WordDetail {
+        WordDetail(
+            id: String(id),
+            term: word,
+            level: levelID,
+            pronunciation: pronunciation,
+            definitions: meanings.map { $0.toWordDetailDefinition() },
+            examples: examples.map { $0.toWordDetailExample() }
+        )
+    }
+}
+
+extension WordMeaningEntity {
+    func toWordDetailDefinition() -> WordDetail.Definition {
+        WordDetail.Definition(
+            meaning: ko,
+            partOfSpeech: PartOfSpeech(rawValue: pos) ?? .unknown
+        )
+    }
+}
+
+extension WordExampleEntity {
+    func toWordDetailExample() -> WordDetail.Example {
+        WordDetail.Example(
+            en: sentenceEn,
+            ko: sentenceKo,
+            order: order,
+            words: words.isEmpty ? nil : words.map {
+                WordDetail.Example.Word(word: $0.word, meaning: $0.meaning, pos: $0.pos)
+            },
+            chunks: chunks.isEmpty ? nil : chunks.map {
+                WordDetail.Example.Chunk(text: $0.text, meaning: $0.meaning)
+            }
+        )
+    }
+}
+
+// MARK: - Lesson (레슨 상세 — 단어 목록 포함)
+
+extension LessonEntity {
+    /// `words`는 lesson_words의 position 오름차순으로 정렬되어 들어온다고 가정한다.
+    func toLesson(cefrLabel: String, words: [Lesson.Word]) -> Lesson {
+        Lesson(
+            id: String(id),
+            level: levelID,
+            lessonNumber: lessonNumber,
+            cefrLevel: cefrLabel,
+            words: words
+        )
+    }
+}
+
+extension WordEntity {
+    /// `meanings`는 rank 오름차순으로 정렬되어 들어온다고 가정한다.
+    func toLessonWord(meanings: [WordMeaningEntity]) -> Lesson.Word {
+        Lesson.Word(
+            id: String(id),
+            term: word,
+            pronunciation: pronunciation,
+            definitions: meanings.map { $0.toLessonWordDefinition() },
+            distractors: distractors,
+            audioUrl: audioUrl
+        )
+    }
+}
+
+extension WordMeaningEntity {
+    func toLessonWordDefinition() -> Lesson.Word.Definition {
+        Lesson.Word.Definition(
+            id: String(id),
+            partOfSpeech: PartOfSpeech(rawValue: pos) ?? .unknown,
+            meaning: ko
+        )
+    }
+}
+
+// MARK: - VocabularyLibrary 정적 스켈레톤 (진행 상태는 VocabularyLibraryMerge가 병합)
+
+extension LevelEntity {
+    /// `lessons`는 lessonNumber 오름차순으로 정렬되어 들어온다고 가정한다. 진행 상태 필드는
+    /// 전부 "시작 전" 기본값이며, 원격 진행 상태와의 병합은 이 타입의 책임이 아니다.
+    func toStaticSummary(lessons: [LessonEntity]) -> LevelSummary {
+        LevelSummary(
+            id: String(id),
+            level: id,
+            name: nameKo,
+            difficulty: cefrLabel,
+            totalLessons: lessons.count,
+            completedLessons: 0,
+            lessons: lessons.map { $0.toStaticProgress() }
+        )
+    }
+}
+
+extension LessonEntity {
+    func toStaticProgress() -> LessonProgress {
+        LessonProgress(
+            id: String(id),
+            lessonNumber: lessonNumber,
+            totalWords: wordCount,
+            status: .notStarted,
+            lastStudiedAt: nil,
+            accuracy: nil,
+            wordsCompleted: 0
+        )
+    }
+}

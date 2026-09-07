@@ -40,7 +40,6 @@ final class WordGameViewModelTests: XCTestCase {
             id: "5",
             level: 1,
             lessonNumber: 1,
-            estimatedDurationMinutes: 1,
             cefrLevel: "A1",
             words: [word]
         )

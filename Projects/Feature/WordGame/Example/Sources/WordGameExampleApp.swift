@@ -28,7 +28,6 @@ private extension Lesson {
             id: id,
             level: 1,
             lessonNumber: 1,
-            estimatedDurationMinutes: 5,
             cefrLevel: "A1",
             words: [
                 Lesson.Word(
