@@ -11,9 +11,9 @@ import Dependencies
 extension VocabularyLibraryRepository: DependencyKey {
     public static let liveValue: VocabularyLibraryRepository = {
         @Dependency(\.vocabularyLibraryStore) var store
-        @Dependency(\.levelLocalDataSource) var level
-        @Dependency(\.lessonLocalDataSource) var lesson
-        @Dependency(\.learningHistoryLocalDataSource) var history
+        @Dependency(\.levelLocalDataSource) var levelDataSource
+        @Dependency(\.lessonLocalDataSource) var lessonDataSource
+        @Dependency(\.learningHistoryLocalDataSource) var historyDataSource
 
         // 정적 구조(레벨 이름/난이도/레슨 번호/레슨당 단어 수)를 로컬 시드에서 조립한 뒤,
         // 완료 이력(`LearningHistoryEntity`, 완료된 레슨만 한 행)을 lessonID(Int, 로컬 DB
@@ -24,12 +24,12 @@ extension VocabularyLibraryRepository: DependencyKey {
         @Sendable
         func refreshVocabularyLibrary() async throws {
             var summaries: [LevelSummary] = []
-            for entity in try await level.allLevels() {
-                let lessons = try await lesson.lessons(levelID: entity.id)
+            for entity in try await levelDataSource.allLevels() {
+                let lessons = try await lessonDataSource.lessons(levelID: entity.id)
                 summaries.append(entity.toStaticSummary(lessons: lessons))
             }
 
-            let completions = try await history.allCompletions()
+            let completions = try await historyDataSource.allCompletions()
             let completionByLessonID = completions.reduce(into: [String: LearningHistoryEntity]()) { result, entity in
                 result[String(entity.lessonID)] = entity
             }
