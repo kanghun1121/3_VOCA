@@ -5,6 +5,7 @@ import DomainInterface
 
 struct VocabularyListContentView: View {
     let state: Lesson
+    let learningHistory: LearningHistory?
     let onWordTapped: (String) -> Void
 
     @State private var blurMode: BlurMode = .off
@@ -16,7 +17,8 @@ struct VocabularyListContentView: View {
                 VocabularyListHeaderView(
                     level: state.level,
                     lessonNumber: state.lessonNumber,
-                    wordCount: state.words.count
+                    wordCount: state.words.count,
+                    learningHistory: learningHistory
                 )
                 .padding(.bottom, 14)
                 BlurModeSelector(selected: $blurMode)

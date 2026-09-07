@@ -22,15 +22,26 @@ public final class VocabularyListViewModel {
     var destination: Destination?
 
     private(set) var viewState: ViewState = .loading
+    private(set) var learningHistory: LearningHistory?
+    @ObservationIgnored private(set) var historyObservationTask: Task<Void, Never>?
     private let lessonID: String
 
     @ObservationIgnored @Dependency(\.loadVocabularyListUseCase) private var loadVocabularyListUseCase
+    @ObservationIgnored @Dependency(\.learningHistoryRepository) private var learningHistoryRepository
 
     public init(lessonID: String) {
         self.lessonID = lessonID
     }
 
     public func load() async {
+        if historyObservationTask == nil {
+            historyObservationTask = Task {
+                for await history in learningHistoryRepository.stream(lessonID) {
+                    self.learningHistory = history
+                }
+            }
+        }
+
         viewState = .loading
         do {
             let lesson = try await loadVocabularyListUseCase.execute(lessonID)
@@ -45,5 +56,9 @@ public final class VocabularyListViewModel {
         let wordIDs = lesson.words.map(\.id)
         guard let index = wordIDs.firstIndex(of: id) else { return }
         destination = .wordDetail(WordDetailViewModel(wordIDs: wordIDs, initialIndex: index))
+    }
+
+    deinit {
+        historyObservationTask?.cancel()
     }
 }
