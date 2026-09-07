@@ -33,6 +33,8 @@ struct RootView: View {
         $0.keychainClient = .liveValue
         $0.httpClient = HTTPClientKey.liveValue
         $0.authenticatedHTTPClient = AuthenticatedHTTPClientKey.liveValue
+        $0.sseClient = SSEClientKey.liveValue
+        $0.chatRepository = .liveValue
     } operation: {
         AppViewModel()
     }
