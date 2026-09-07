@@ -83,7 +83,8 @@ extension WordMeaningEntity {
     }
 }
 
-// MARK: - VocabularyLibrary 정적 스켈레톤 (진행 상태는 VocabularyLibraryMerge가 병합)
+// MARK: - VocabularyLibrary 정적 스켈레톤 (진행 상태는 VocabularyLibraryRepository+Live.swift의
+// liveValue 안에서 로컬 완료 이력(LearningHistoryEntity)으로 병합)
 
 extension LevelEntity {
     /// `lessons`는 lessonNumber 오름차순으로 정렬되어 들어온다고 가정한다. 진행 상태 필드는

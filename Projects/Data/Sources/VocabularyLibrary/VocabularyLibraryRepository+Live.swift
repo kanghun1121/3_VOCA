@@ -4,48 +4,75 @@ import DomainInterface
 
 import Dependencies
 
-/// 정적 구조(레벨 이름/난이도/레슨 번호/레슨당 단어 수)는 로컬 시드에서 조립한다 — 이 조립을
-/// 전담하는 별도 타입은 만들지 않는다. Level+Lesson을 조합하는 소비자가 이 함수 하나뿐이라
-/// 새 타입을 추가하면 "DataSource를 조합하는 DataSource"라는 불필요한 중복이 생긴다.
-// internal(비공개 아님) — 로컬 스켈레톤 조립 로직을 독립적으로 테스트하기 위해 노출한다.
-func localSkeleton() async throws -> [LevelSummary] {
-    @Dependency(\.levelLocalDataSource) var level
-    @Dependency(\.lessonLocalDataSource) var lesson
-
-    var summaries: [LevelSummary] = []
-    for entity in try await level.allLevels() {
-        let lessons = try await lesson.lessons(levelID: entity.id)
-        summaries.append(entity.toStaticSummary(lessons: lessons))
-    }
-    return summaries
-}
-
-private func refreshVocabularyLibrary(store: VocabularyLibraryStore) async throws {
-    let local = try await localSkeleton()
-    await store.set(VocabularyLibrary(levels: local))
-}
-
-/// Level/Lesson 콘텐츠가 전부 로컬 시드로 제공되므로 원격 진행 상태 병합은 더 이상 하지
-/// 않는다. `VocabularyLibraryRemoteDataSource`/`VocabularyLibraryMerge`는 지금은 어디서도
-/// 호출하지 않는 죽은 코드로 남겨둔다 — 서버 진행 상태 동기화가 다시 필요해지면 그때 다시 연결한다.
+/// Level/Lesson 콘텐츠와 완료 이력이 전부 로컬 시드/로컬 DB로 제공되므로 원격 진행 상태 병합은
+/// 더 이상 하지 않는다. 원격 진행 상태 조회(`VocabularyLibraryRemoteDataSource`)와 그 병합
+/// 로직(`VocabularyLibraryMerge`)은 완전히 제거했다 — 서버 진행 상태 동기화가 다시 필요해지면
+/// 그때 새로 설계한다.
 extension VocabularyLibraryRepository: DependencyKey {
     public static let liveValue: VocabularyLibraryRepository = {
-        let store = VocabularyLibraryStore()
+        @Dependency(\.vocabularyLibraryStore) var store
+        @Dependency(\.levelLocalDataSource) var level
+        @Dependency(\.lessonLocalDataSource) var lesson
+        @Dependency(\.learningHistoryLocalDataSource) var history
+
+        // 정적 구조(레벨 이름/난이도/레슨 번호/레슨당 단어 수)를 로컬 시드에서 조립한 뒤,
+        // 완료 이력(`LearningHistoryEntity`, 완료된 레슨만 한 행)을 lessonID(Int, 로컬 DB
+        // 공통 id)로 덧입혀 진행 상태를 계산한다 — 행이 있으면 `.completed`, 없으면
+        // `.notStarted`. `accuracy`/`wordsCompleted`(단어별 정답률)는 로컬에 저장하지 않기로
+        // 확정했으므로(완료 여부만 로컬화) 완료된 레슨도 `accuracy: nil`, `wordsCompleted:
+        // totalWords`로 채운다. stream(최초 스냅샷)과 refresh(수동 새로고침) 둘 다에서 쓰인다.
+        @Sendable
+        func refreshVocabularyLibrary() async throws {
+            var summaries: [LevelSummary] = []
+            for entity in try await level.allLevels() {
+                let lessons = try await lesson.lessons(levelID: entity.id)
+                summaries.append(entity.toStaticSummary(lessons: lessons))
+            }
+
+            let completions = try await history.allCompletions()
+            let completionByLessonID = completions.reduce(into: [String: LearningHistoryEntity]()) { result, entity in
+                result[String(entity.lessonID)] = entity
+            }
+
+            let levels = summaries.map { level -> LevelSummary in
+                let lessons = level.lessons.map { lesson -> LessonProgress in
+                    guard let completion = completionByLessonID[lesson.id] else { return lesson }
+                    return LessonProgress(
+                        id: lesson.id,
+                        lessonNumber: lesson.lessonNumber,
+                        totalWords: lesson.totalWords,
+                        status: .completed,
+                        lastStudiedAt: completion.lastStudiedAt,
+                        accuracy: nil,
+                        wordsCompleted: lesson.totalWords
+                    )
+                }
+                return LevelSummary(
+                    id: level.id,
+                    level: level.level,
+                    name: level.name,
+                    difficulty: level.difficulty,
+                    totalLessons: level.totalLessons,
+                    completedLessons: lessons.filter { $0.status == .completed }.count,
+                    lessons: lessons
+                )
+            }
+
+            await store.set(VocabularyLibrary(levels: levels))
+        }
+
         return VocabularyLibraryRepository(
             stream: {
                 AsyncStream { continuation in
-                    let id = UUID()
-                    continuation.onTermination = { _ in
-                        Task { await store.unregister(id: id) }
-                    }
                     Task {
+                        let id = UUID()
                         await store.register(id: id, continuation: continuation)
-                        try? await refreshVocabularyLibrary(store: store)
+                        try? await refreshVocabularyLibrary()
                     }
                 }
             },
             refresh: {
-                try await refreshVocabularyLibrary(store: store)
+                try await refreshVocabularyLibrary()
             }
         )
     }()
