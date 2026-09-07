@@ -19,6 +19,7 @@ public struct VocabularyListView: View {
             case .loaded(let state):
                 VocabularyListContentView(
                     state: state,
+                    learningHistory: viewModel.learningHistory,
                     onWordTapped: viewModel.didTapWord
                 )
             case .error(let message):
