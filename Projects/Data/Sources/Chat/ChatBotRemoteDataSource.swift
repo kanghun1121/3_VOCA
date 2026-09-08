@@ -9,16 +9,9 @@ import Dependencies
 /// 여전히 Claude 스키마 기준이다. 로컬 저장 요소가 전혀 없는 도메인이라(스트림 결과를 즉시
 /// 소비하고 버림) LocalDataSource는 만들지 않는다.
 struct ChatBotRemoteDataSource: Sendable {
-    private static let model = "claude-sonnet-5"
-    private static let maxTokens = 2048
-
     func streamEvents(message: String) -> AsyncThrowingStream<ChatProxyStreamEvent, Error> {
         @Dependency(\.sseClient) var sseClient
-        let request = ChatProxyRequest(
-            model: Self.model,
-            maxTokens: Self.maxTokens,
-            messages: [ChatProxyMessage(role: "user", content: message)]
-        )
+        let request = ChatProxyRequest(messages: [ChatProxyMessage(role: "user", content: message)])
         return ChatProxySSEParser.parse(frames: sseClient.stream(request))
     }
 }
