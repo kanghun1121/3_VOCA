@@ -14,7 +14,9 @@ public struct LocalDatabaseSeeding: Sendable {
 
 extension LocalDatabaseSeeding: DependencyKey {
     // 테스트에서 격리를 위해 리셋할 수 있도록 internal로 둔다(모듈 밖으로는 노출 안 됨).
-    static let seededFlagKey = "localDatabase.seeded.v1"
+    // #106에서 v1 → v2로 올렸다: 스키마 마이그레이션(LocalDatabaseMigrationPlan) 후
+    // WordEntity.meanings/LessonEntity.orderedWordIDs가 비어 있으므로 재시딩이 필요하다.
+    static let seededFlagKey = "localDatabase.seeded.v2"
 
     public static let liveValue = LocalDatabaseSeeding(seedIfNeeded: {
         guard !UserDefaults.standard.bool(forKey: Self.seededFlagKey) else { return }
