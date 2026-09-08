@@ -6,11 +6,7 @@ import NetworkingInterface
 
 final class ChatProxyRequestTests: XCTestCase {
     private func makeSUT(message: String = "hello") -> ChatProxyRequest {
-        ChatProxyRequest(
-            model: "claude-sonnet-5",
-            maxTokens: 2048,
-            messages: [ChatProxyMessage(role: "user", content: message)]
-        )
+        ChatProxyRequest(messages: [ChatProxyMessage(role: "user", content: message)])
     }
 
     func test_baseURL은_Supabase_함수_URL이다() {
@@ -44,15 +40,15 @@ final class ChatProxyRequestTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/json")
     }
 
-    func test_body는_model_maxTokens_stream_messages를_그대로_인코딩한다() throws {
+    func test_body는_model_maxTokens없이_stream_messages만_인코딩한다() throws {
         let sut = makeSUT(message: "hello")
 
         let request = try sut.makeURLRequest()
         let body = try XCTUnwrap(request.httpBody)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
 
-        XCTAssertEqual(json["model"] as? String, "claude-sonnet-5")
-        XCTAssertEqual(json["max_tokens"] as? Int, 2048)
+        XCTAssertNil(json["model"])
+        XCTAssertNil(json["max_tokens"])
         XCTAssertEqual(json["stream"] as? Bool, true)
 
         let messages = try XCTUnwrap(json["messages"] as? [[String: String]])
