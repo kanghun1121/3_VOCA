@@ -3,7 +3,7 @@ import SwiftData
 
 import Dependencies
 
-/// `LevelEntity`만 소유한다. Lesson(레슨 상세의 cefrLabel 조회)과 VocabularyLibrary(레벨
+/// `LevelEntity`만 소유한다. Lesson(레슨 상세의 cefrLabel 조회)과 LearningLibrary(레벨
 /// 목록 스켈레톤) 양쪽에서 재사용되어 별도 도메인으로 독립시켰다.
 struct LevelLocalDataSource: Sendable {
     @Dependency(\.localDatabaseContext) private var context
@@ -14,7 +14,7 @@ struct LevelLocalDataSource: Sendable {
         )).first
     }
 
-    /// sortOrder 오름차순 — VocabularyLibrary 화면에 노출되는 레벨 순서다.
+    /// sortOrder 오름차순 — LearningLibrary 화면에 노출되는 레벨 순서다.
     func allLevels() async throws -> [LevelEntity] {
         try await context.fetch(FetchDescriptor<LevelEntity>(
             sortBy: [SortDescriptor(\.sortOrder)]

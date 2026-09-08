@@ -13,7 +13,7 @@ struct SelectedDateContextRow: View {
     }
 
     private var countLabel: String {
-        recordCount == 0 ? "기록 없음" : "세션 \(recordCount)개"
+        recordCount == 0 ? "기록 없음" : "레슨 \(recordCount)개"
     }
 
     var body: some View {

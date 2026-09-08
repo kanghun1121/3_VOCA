@@ -12,7 +12,7 @@ public final class HomeViewModel {
     @CasePathable
     public enum Destination {
         case lesson(LessonDetailViewModel)
-        case levelLibrary(LevelLibraryViewModel)
+        case learningLibrary(LearningLibraryViewModel)
     }
 
     var destination: Destination?
@@ -61,7 +61,7 @@ public final class HomeViewModel {
     }
 
     func didTapCTA() {
-        destination = .levelLibrary(LevelLibraryViewModel())
+        destination = .learningLibrary(LearningLibraryViewModel())
     }
     
     private func apply(_ records: [LessonCompletionRecord]) {

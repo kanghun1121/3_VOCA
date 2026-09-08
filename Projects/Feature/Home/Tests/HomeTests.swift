@@ -56,7 +56,7 @@ final class CalendarGridTests: XCTestCase {
                 id: "\(index)",
                 lessonID: "\(index)",
                 time: june,
-                title: "세션",
+                title: "레슨",
                 wordCount: 10
             )
         }

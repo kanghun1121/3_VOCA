@@ -12,7 +12,7 @@ struct MainTabView: View {
             Tab("홈", systemImage: "house.fill") {
                 HomeView(viewModel: withDependencies {
                     $0.loadLessonDetailUseCase = .liveValue
-                    $0.loadVocabularyListUseCase = .liveValue
+                    $0.loadLessonWordsUseCase = .liveValue
                 } operation: {
                     HomeViewModel()
                 })

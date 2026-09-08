@@ -4,7 +4,7 @@ import DesignSystem
 
 struct ActionButtonsSection: View {
     let onGameTapped: () -> Void
-    let onVocabularyListTapped: () -> Void
+    let onWordListTapped: () -> Void
 
     var body: some View {
         VStack(spacing: 10) {
@@ -19,7 +19,7 @@ struct ActionButtonsSection: View {
             }
             .buttonStyle(.plain)
 
-            Button(action: onVocabularyListTapped) {
+            Button(action: onWordListTapped) {
                 Label("단어 보기", systemImage: "book")
                     .font(DesignSystemFontFamily.Pretendard.semiBold.swiftUIFont(size: 17))
                     .foregroundStyle(DesignSystemAsset.fgStrong.swiftUIColor)

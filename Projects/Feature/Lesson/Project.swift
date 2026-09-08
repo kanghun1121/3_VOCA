@@ -6,8 +6,9 @@ let project = Project.makeModule(
     targets: [
         .feature(implements: .lesson, factory: .init(
             dependencies: [
-                .feature(implements: .vocabulary),
+                .feature(implements: .word),
                 .feature(implements: .wordGame),
+                .domainInterface,
                 .dependencies,
                 .designSystem,
                 .swiftUINavigation,

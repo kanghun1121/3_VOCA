@@ -8,10 +8,10 @@ extension CompleteLessonUseCase: DependencyKey {
     public static let liveValue = CompleteLessonUseCase(
         execute: { lessonID in
             @Dependency(\.learningHistoryRepository) var learningHistoryRepository
-            @Dependency(\.vocabularyLibraryRepository) var vocabularyLibraryRepository
+            @Dependency(\.learningLibraryRepository) var learningLibraryRepository
 
             try await learningHistoryRepository.complete(lessonID)
-            try? await vocabularyLibraryRepository.refresh()
+            try? await learningLibraryRepository.refresh()
         }
     )
 }

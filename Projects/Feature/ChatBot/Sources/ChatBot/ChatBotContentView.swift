@@ -2,7 +2,7 @@ import SwiftUI
 
 import DesignSystem
 
-/// 문법 분석 화면 본문 — AnalysisCard는 고정 헤더가 아니라 채팅 컨텐츠의 첫 항목이라
+/// 문법 분석 화면 본문 — ChatBotContextCard는 고정 헤더가 아니라 채팅 컨텐츠의 첫 항목이라
 /// 메시지와 함께 스크롤되어 사라진다. 입력바만 그 위에 플로팅 레이어로 얹힌다
 /// (`chatArea`의 `.safeAreaInset` 참고) — 입력바가 다중 행으로 늘어나도 마지막 메시지가
 /// 가려지지 않는다.
@@ -35,7 +35,7 @@ struct ChatBotContentView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 12) {
-                    AnalysisCardView(context: viewModel.context)
+                    ChatBotContextCardView(context: viewModel.context)
 
                     ForEach(viewModel.messages) { message in
                         let isLastMessage = message.id == viewModel.messages.last?.id

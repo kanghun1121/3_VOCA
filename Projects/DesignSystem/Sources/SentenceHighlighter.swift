@@ -5,7 +5,7 @@ import SwiftUI
 ///
 /// `WordDetailExampleRow`에 있던 NLTagger 렘마 매칭 로직을 그대로 옮긴 것으로, 표층형이
 /// 일치하는 경우를 우선 확인한 뒤 렘마(원형) 비교로 폴백한다. 여러 화면(WordDetail 예문 카드,
-/// ChatBot AnalysisCard)이 같은 하이라이트 규칙을 공유해야 해서 DesignSystem으로 공용화했다.
+/// ChatBot ChatBotContextCard)이 같은 하이라이트 규칙을 공유해야 해서 DesignSystem으로 공용화했다.
 public enum SentenceHighlighter {
     /// - Parameters:
     ///   - sentence: 하이라이트를 적용할 원문 문장.

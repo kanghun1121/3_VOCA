@@ -37,7 +37,7 @@ extension WordExampleEntity {
             ko: sentenceKo,
             order: order,
             words: words.isEmpty ? nil : words.map {
-                WordDetail.Example.Word(word: $0.word, meaning: $0.meaning, pos: $0.pos)
+                WordDetail.Example.WordAnnotation(word: $0.word, meaning: $0.meaning, pos: $0.pos)
             },
             chunks: chunks.isEmpty ? nil : chunks.map {
                 WordDetail.Example.Chunk(text: $0.text, meaning: $0.meaning)
@@ -85,7 +85,7 @@ extension WordMeaningPayload {
     }
 }
 
-// MARK: - VocabularyLibrary 정적 스켈레톤 (진행 상태는 VocabularyLibraryRepository+Live.swift의
+// MARK: - LearningLibrary 정적 스켈레톤 (진행 상태는 LearningLibraryRepository+Live.swift의
 // liveValue 안에서 로컬 완료 이력(LearningHistoryEntity)으로 병합)
 
 extension LevelEntity {
