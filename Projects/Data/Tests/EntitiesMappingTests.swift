@@ -5,7 +5,7 @@ import DomainInterface
 
 final class EntitiesMappingTests: XCTestCase {
     func test_pos가_PartOfSpeech에_있으면_그대로_매핑된다() {
-        let meaning = WordMeaningEntity(id: 1, wordID: 1, pos: "noun", ko: "테스트", rank: 1)
+        let meaning = WordMeaningPayload(id: 1, pos: "noun", ko: "테스트", rank: 1)
 
         XCTAssertEqual(meaning.toWordDetailDefinition().partOfSpeech, .noun)
         XCTAssertEqual(meaning.toLessonWordDefinition().partOfSpeech, .noun)
@@ -13,7 +13,7 @@ final class EntitiesMappingTests: XCTestCase {
 
     func test_pos가_PartOfSpeech에_없으면_unknown으로_폴백한다() {
         // "article"/"determiner"는 실제 시드 데이터에 존재하지만 PartOfSpeech enum에는 없다.
-        let meaning = WordMeaningEntity(id: 1, wordID: 1, pos: "article", ko: "테스트", rank: 1)
+        let meaning = WordMeaningPayload(id: 1, pos: "article", ko: "테스트", rank: 1)
 
         XCTAssertEqual(meaning.toWordDetailDefinition().partOfSpeech, .unknown)
         XCTAssertEqual(meaning.toLessonWordDefinition().partOfSpeech, .unknown)
@@ -51,5 +51,17 @@ final class EntitiesMappingTests: XCTestCase {
 
         XCTAssertEqual(domain.words?.map(\.word), ["apple"])
         XCTAssertEqual(domain.chunks?.map(\.text), ["an apple"])
+    }
+
+    func test_레슨의_totalWords는_orderedWordIDs_개수로_파생된다() {
+        let lesson = LessonEntity(id: 1, levelID: 1, lessonNumber: 1, orderedWordIDs: [10, 20, 30])
+
+        XCTAssertEqual(lesson.toStaticProgress().totalWords, 3)
+    }
+
+    func test_orderedWordIDs가_비어있으면_totalWords도_0이다() {
+        let lesson = LessonEntity(id: 1, levelID: 1, lessonNumber: 1)
+
+        XCTAssertEqual(lesson.toStaticProgress().totalWords, 0)
     }
 }

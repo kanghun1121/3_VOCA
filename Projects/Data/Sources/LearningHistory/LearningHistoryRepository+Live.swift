@@ -30,7 +30,7 @@ extension LearningHistoryRepository: DependencyKey {
                     lessonID: String(entity.lessonID),
                     levelName: levelEntity.nameKo,
                     lessonNumber: lessonEntity.lessonNumber,
-                    totalWords: lessonEntity.wordCount,
+                    totalWords: lessonEntity.orderedWordIDs.count,
                     lastStudiedAt: entity.lastStudiedAt
                 ))
             }

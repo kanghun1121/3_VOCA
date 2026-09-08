@@ -26,13 +26,30 @@ enum LocalDatabaseSeeder {
         let distractorsByWordID = distractors.reduce(into: [Int: [String]]()) { result, item in
             result[item.wordID] = item.distractors
         }
+        // rank 오름차순으로 정렬해서 저장한다 — 조회 시(Entities+Mapping.swift)도 다시 정렬하지만,
+        // 시더가 정렬을 빠뜨리는 회귀를 막는 이중 방어.
+        let meaningsByWordID = Dictionary(grouping: meanings, by: \.wordID)
+            .mapValues { rows in
+                rows.sorted { $0.rank < $1.rank }.map {
+                    WordMeaningPayload(id: $0.id, pos: $0.pos, ko: $0.ko, rank: $0.rank)
+                }
+            }
+        // position 오름차순으로 정렬해서 저장한다 — 배열 인덱스가 곧 정렬 결과이므로 여기서
+        // 한 번만 정렬하면 이후 조회에서 다시 정렬할 필요가 없다.
+        let wordIDsByLessonID = Dictionary(grouping: lessonWords, by: \.lessonID)
+            .mapValues { rows in rows.sorted { $0.position < $1.position }.map(\.wordID) }
 
         await level.insertLevels(levels.map {
             LevelEntity(id: $0.id, nameKo: $0.nameKo, cefrLabel: $0.cefrLabel, sortOrder: $0.sortOrder)
         })
 
         await lesson.insertLessons(lessons.map {
-            LessonEntity(id: $0.id, levelID: $0.levelID, lessonNumber: $0.lessonNumber, wordCount: $0.wordCount)
+            LessonEntity(
+                id: $0.id,
+                levelID: $0.levelID,
+                lessonNumber: $0.lessonNumber,
+                orderedWordIDs: wordIDsByLessonID[$0.id] ?? []
+            )
         })
 
         await word.insertWords(words.map {
@@ -42,12 +59,9 @@ enum LocalDatabaseSeeder {
                 levelID: $0.levelID,
                 pronunciation: $0.pronunciation,
                 audioUrl: $0.audioUrl,
-                distractors: distractorsByWordID[$0.id] ?? []
+                distractors: distractorsByWordID[$0.id] ?? [],
+                meanings: meaningsByWordID[$0.id] ?? []
             )
-        })
-
-        await word.insertMeanings(meanings.map {
-            WordMeaningEntity(id: $0.id, wordID: $0.wordID, pos: $0.pos, ko: $0.ko, rank: $0.rank)
         })
 
         await word.insertExamples(examples.map {
@@ -60,10 +74,6 @@ enum LocalDatabaseSeeder {
                 words: $0.words ?? [],
                 chunks: $0.chunks ?? []
             )
-        })
-
-        await lesson.insertLessonWords(lessonWords.map {
-            LessonWordEntity(lessonID: $0.lessonID, wordID: $0.wordID, position: $0.position)
         })
 
         // 전체를 한 번에 쌓고 마지막에 단 한 번만 저장한다 — 세 DataSource가 전부 같은

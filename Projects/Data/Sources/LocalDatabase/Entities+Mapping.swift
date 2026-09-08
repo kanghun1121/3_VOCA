@@ -5,21 +5,23 @@ import DomainInterface
 // MARK: - WordDetail
 
 extension WordEntity {
-    /// `meanings`는 rank 오름차순, `examples`는 order 오름차순으로 정렬되어 들어온다고 가정한다
-    /// (정렬은 `WordLocalDataSource`의 조회 메서드 책임).
-    func toWordDetail(meanings: [WordMeaningEntity], examples: [WordExampleEntity]) -> WordDetail {
+    /// `meanings`는 rank 오름차순으로 정렬해서 사용한다(대표 뜻 결정 로직이 첫 번째 요소에
+    /// 의존하므로 저장 순서를 신뢰하지 않고 매핑 경계에서 항상 명시적으로 정렬한다).
+    /// `examples`는 order 오름차순으로 정렬되어 들어온다고 가정한다(정렬은
+    /// `WordLocalDataSource`의 조회 메서드 책임).
+    func toWordDetail(examples: [WordExampleEntity]) -> WordDetail {
         WordDetail(
             id: String(id),
             term: word,
             level: levelID,
             pronunciation: pronunciation,
-            definitions: meanings.map { $0.toWordDetailDefinition() },
+            definitions: meanings.sorted { $0.rank < $1.rank }.map { $0.toWordDetailDefinition() },
             examples: examples.map { $0.toWordDetailExample() }
         )
     }
 }
 
-extension WordMeaningEntity {
+extension WordMeaningPayload {
     func toWordDetailDefinition() -> WordDetail.Definition {
         WordDetail.Definition(
             meaning: ko,
@@ -60,20 +62,20 @@ extension LessonEntity {
 }
 
 extension WordEntity {
-    /// `meanings`는 rank 오름차순으로 정렬되어 들어온다고 가정한다.
-    func toLessonWord(meanings: [WordMeaningEntity]) -> Lesson.Word {
+    /// `meanings`는 rank 오름차순으로 정렬해서 사용한다(위 `toWordDetail`과 동일한 이유).
+    func toLessonWord() -> Lesson.Word {
         Lesson.Word(
             id: String(id),
             term: word,
             pronunciation: pronunciation,
-            definitions: meanings.map { $0.toLessonWordDefinition() },
+            definitions: meanings.sorted { $0.rank < $1.rank }.map { $0.toLessonWordDefinition() },
             distractors: distractors,
             audioUrl: audioUrl
         )
     }
 }
 
-extension WordMeaningEntity {
+extension WordMeaningPayload {
     func toLessonWordDefinition() -> Lesson.Word.Definition {
         Lesson.Word.Definition(
             id: String(id),
@@ -107,7 +109,7 @@ extension LessonEntity {
         LessonProgress(
             id: String(id),
             lessonNumber: lessonNumber,
-            totalWords: wordCount,
+            totalWords: orderedWordIDs.count,
             status: .notStarted,
             lastStudiedAt: nil,
             accuracy: nil,
