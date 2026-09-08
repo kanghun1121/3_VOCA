@@ -1,7 +1,7 @@
 import Foundation
 
 import DomainInterface
-import FeatureVocabulary
+import FeatureWord
 import FeatureWordGame
 
 import Dependencies
@@ -18,7 +18,7 @@ public final class LessonDetailViewModel {
 
     @CasePathable
     public enum Destination {
-        case vocabularyList(VocabularyListViewModel)
+        case wordList(WordListViewModel)
         case wordGame(WordGameViewModel)
     }
 
@@ -53,8 +53,8 @@ public final class LessonDetailViewModel {
         }
     }
 
-    public func didTapVocabularyList() {
-        destination = .vocabularyList(VocabularyListViewModel(lessonID: lessonID))
+    public func didTapWordList() {
+        destination = .wordList(WordListViewModel(lessonID: lessonID))
     }
 
     public func didTapGame() {

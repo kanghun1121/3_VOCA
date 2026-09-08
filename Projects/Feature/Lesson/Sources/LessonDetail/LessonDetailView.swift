@@ -1,7 +1,7 @@
 import SwiftUI
 
 import DomainInterface
-import FeatureVocabulary
+import FeatureWord
 import FeatureWordGame
 
 import SwiftUINavigation
@@ -21,7 +21,7 @@ public struct LessonDetailView: View {
                     state: .preview(id: "placeholder"),
                     learningHistory: .preview,
                     onGameTapped: {},
-                    onVocabularyListTapped: {}
+                    onWordListTapped: {}
                 )
                 .redacted(reason: .placeholder)
                 .allowsHitTesting(false)
@@ -30,7 +30,7 @@ public struct LessonDetailView: View {
                     state: state,
                     learningHistory: viewModel.learningHistory,
                     onGameTapped: viewModel.didTapGame,
-                    onVocabularyListTapped: viewModel.didTapVocabularyList
+                    onWordListTapped: viewModel.didTapWordList
                 )
             case .error(let message):
                 Text(message)
@@ -40,8 +40,8 @@ public struct LessonDetailView: View {
         }
         .task { await viewModel.onAppear() }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(item: $viewModel.destination.vocabularyList) { vocabularyListVM in
-            VocabularyListView(viewModel: vocabularyListVM)
+        .navigationDestination(item: $viewModel.destination.wordList) { wordListVM in
+            WordListView(viewModel: wordListVM)
         }
         .navigationDestination(item: $viewModel.destination.wordGame) { wordGameVM in
             WordGameView(viewModel: wordGameVM)

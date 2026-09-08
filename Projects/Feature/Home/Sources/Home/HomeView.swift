@@ -19,8 +19,8 @@ public struct HomeView: View {
                 .navigationDestination(item: $viewModel.destination.lesson) { detailVM in
                     LessonDetailView(viewModel: detailVM)
                 }
-                .navigationDestination(item: $viewModel.destination.levelLibrary) { libraryVM in
-                    LevelLibraryView(viewModel: libraryVM)
+                .navigationDestination(item: $viewModel.destination.learningLibrary) { libraryVM in
+                    LearningLibraryView(viewModel: libraryVM)
                 }
         }
         .tint(DesignSystemAsset.fgStrong.swiftUIColor)

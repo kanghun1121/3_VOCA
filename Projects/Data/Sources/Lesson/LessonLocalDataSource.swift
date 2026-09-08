@@ -14,7 +14,7 @@ struct LessonLocalDataSource: Sendable {
         )).first
     }
 
-    /// lessonNumber 오름차순 — VocabularyLibrary 레벨 안에서 레슨이 노출되는 순서다.
+    /// lessonNumber 오름차순 — LearningLibrary 레벨 안에서 레슨이 노출되는 순서다.
     func lessons(levelID: Int) async throws -> [LessonEntity] {
         try await context.fetch(FetchDescriptor<LessonEntity>(
             predicate: #Predicate { $0.levelID == levelID },

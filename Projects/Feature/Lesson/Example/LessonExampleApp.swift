@@ -5,7 +5,7 @@ import FeatureLesson
 import Dependencies
 
 @main
-struct VocaExampleApp: App {
+struct LessonExampleApp: App {
     init() {
         prepareDependencies {
             $0.loadLessonDetailUseCase.execute = { id in (lesson: .preview(id: id), audioReady: Task {}) }
@@ -15,6 +15,7 @@ struct VocaExampleApp: App {
                     continuation.finish()
                 }
             }
+            $0.learningLibraryRepository = .previewValue
         }
     }
 

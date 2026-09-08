@@ -9,7 +9,7 @@ struct LessonHeaderSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("LEVEL \(level) · SESSION \(lessonNumber)")
+            Text("LEVEL \(level) · LESSON \(lessonNumber)")
                 .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 14))
                 .foregroundStyle(DesignSystemAsset.primary.swiftUIColor)
             Text("\(wordCount)개 단어")

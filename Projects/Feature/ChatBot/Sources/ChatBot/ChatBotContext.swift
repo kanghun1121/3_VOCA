@@ -10,7 +10,7 @@ public struct ChatBotContext: Equatable, Sendable {
     public let term: String
     /// 대상 단어가 포함된 예문 문장.
     public let sentence: String
-    /// AnalysisCard 칩에 표시할 완성된 레벨 라벨(예: "초급").
+    /// ChatBotContextCard 칩에 표시할 완성된 레벨 라벨(예: "초급").
     public let levelLabel: String
 
     public init(

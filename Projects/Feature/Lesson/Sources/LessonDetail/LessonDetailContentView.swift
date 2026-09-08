@@ -7,7 +7,7 @@ struct LessonDetailContentView: View {
     let state: Lesson
     let learningHistory: LearningHistory?
     let onGameTapped: () -> Void
-    let onVocabularyListTapped: () -> Void
+    let onWordListTapped: () -> Void
 
     var body: some View {
         ScrollView {
@@ -19,7 +19,7 @@ struct LessonDetailContentView: View {
                 )
                 RecordCard(record: learningHistory)
                 WordPreviewSection(words: state.words)
-                ActionButtonsSection(onGameTapped: onGameTapped, onVocabularyListTapped: onVocabularyListTapped)
+                ActionButtonsSection(onGameTapped: onGameTapped, onWordListTapped: onWordListTapped)
             }
             .padding(.horizontal, 20)
             .padding(.vertical)

@@ -4,12 +4,12 @@ import DependencyPlugin
 let targets: [Target] = [
     .feature(factory: .init(
         dependencies: [
-            .feature(implements: .analysis),
+            .feature(implements: .chunkReader),
             .feature(implements: .chatBot),
             .feature(implements: .home),
             .feature(implements: .login),
             .feature(implements: .lesson),
-            .feature(implements: .vocabulary),
+            .feature(implements: .word),
             .feature(implements: .wordGame),
             .feature(implements: .myPage),
         ]

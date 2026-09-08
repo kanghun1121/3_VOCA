@@ -12,7 +12,7 @@ struct WordPreviewSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("이번 세션의 단어 (\(words.count))")
+            Text("이번 레슨의 단어 (\(words.count))")
                 .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 14))
                 .foregroundStyle(DesignSystemAsset.fgMuted.swiftUIColor)
                 .tracking(0.26)

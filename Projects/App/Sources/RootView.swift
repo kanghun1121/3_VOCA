@@ -21,7 +21,7 @@ struct RootView: View {
         $0.completeLessonUseCase = .liveValue
         $0.authSessionRepository = .liveValue
         $0.authRepository = .liveValue
-        $0.vocabularyLibraryRepository = .liveValue
+        $0.learningLibraryRepository = .liveValue
         $0.lessonRepository = .liveValue
         $0.learningHistoryRepository = .liveValue
         $0.chatRepository = .liveValue
