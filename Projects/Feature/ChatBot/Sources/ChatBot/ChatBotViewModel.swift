@@ -1,8 +1,12 @@
+import AuthenticationServices
 import Foundation
+import OSLog
 
 import DomainInterface
 
 import Dependencies
+
+private let logger = Logger(subsystem: "com.kangdev.FiveVoca", category: "Auth")
 
 @Observable
 @MainActor
@@ -11,8 +15,11 @@ public final class ChatBotViewModel {
     var input: String = ""
     private(set) var messages: [ChatBotMessage] = []
     private(set) var isStreaming: Bool = false
+    private(set) var isShowingLoginRequiredPopup = false
 
     @ObservationIgnored @Dependency(\.chatRepository) private var chatRepository
+    @ObservationIgnored @Dependency(\.checkAuthSessionUseCase) private var checkAuthSessionUseCase
+    @ObservationIgnored @Dependency(\.signInWithAppleUseCase) private var signInWithAppleUseCase
     // 테스트에서 스트림 종료를 결정론적으로 기다리기 위해 노출한다
     // (WordGame의 SpellingViewModel.advanceTask와 같은 방식).
     @ObservationIgnored private(set) var streamTask: Task<Void, Never>?
@@ -91,6 +98,37 @@ public final class ChatBotViewModel {
 
     func onDisappear() {
         streamTask?.cancel()
+    }
+
+    func onAppear() {
+        isShowingLoginRequiredPopup = !checkAuthSessionUseCase.execute()
+    }
+
+    func appleLoginRequested(_ request: ASAuthorizationAppleIDRequest) {
+        request.requestedScopes = [.fullName, .email]
+    }
+
+    func appleLoginCompleted(_ result: Result<ASAuthorization, any Error>) {
+        switch result {
+        case .success(let authorization):
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                  let tokenData = credential.identityToken,
+                  let identityToken = String(data: tokenData, encoding: .utf8) else { return }
+            Task {
+                do {
+                    _ = try await signInWithAppleUseCase.execute(identityToken)
+                    isShowingLoginRequiredPopup = false
+                } catch {
+                    logger.error("signInWithApple 실패: \(error.localizedDescription)")
+                }
+            }
+        case .failure(let error):
+            logger.error("Apple 로그인 실패: \(error.localizedDescription)")
+        }
+    }
+
+    func didTapLater() {
+        isShowingLoginRequiredPopup = false
     }
 
     /// 텍스트를 "단어 + 그 뒤에 붙는 공백"들로 쪼갠다. 순서대로 이어 붙이면 원문과 정확히

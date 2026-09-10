@@ -109,4 +109,43 @@ final class ChatBotTests: XCTestCase {
         viewModel.didTapCancel()
         await viewModel.streamTask?.value
     }
+
+    func test_미인증_상태면_onAppear_후_로그인_필요_팝업이_노출된다() {
+        let viewModel = withDependencies {
+            $0.checkAuthSessionUseCase.execute = { false }
+        } operation: {
+            ChatBotViewModel(context: .init(term: "address", sentence: "I wrote my address.", levelLabel: "초급"))
+        }
+
+        viewModel.onAppear()
+
+        XCTAssertTrue(viewModel.isShowingLoginRequiredPopup)
+    }
+
+    func test_인증_상태면_onAppear_후_로그인_필요_팝업이_노출되지_않는다() {
+        let viewModel = withDependencies {
+            $0.checkAuthSessionUseCase.execute = { true }
+        } operation: {
+            ChatBotViewModel(context: .init(term: "address", sentence: "I wrote my address.", levelLabel: "초급"))
+        }
+
+        viewModel.onAppear()
+
+        XCTAssertFalse(viewModel.isShowingLoginRequiredPopup)
+    }
+
+    func test_나중에_탭하면_로그인_필요_팝업이_닫힌다() {
+        let viewModel = withDependencies {
+            $0.checkAuthSessionUseCase.execute = { false }
+        } operation: {
+            ChatBotViewModel(context: .init(term: "address", sentence: "I wrote my address.", levelLabel: "초급"))
+        }
+
+        viewModel.onAppear()
+        XCTAssertTrue(viewModel.isShowingLoginRequiredPopup)
+
+        viewModel.didTapLater()
+
+        XCTAssertFalse(viewModel.isShowingLoginRequiredPopup)
+    }
 }
