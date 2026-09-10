@@ -21,7 +21,9 @@ public final class MyPageViewModel {
 
     var destination: Destination?
     var deleteConfirmText = ""
+    var isAuthenticated = false
     @ObservationIgnored @Dependency(\.authSessionRepository) private var authSessionRepository
+    @ObservationIgnored @Dependency(\.checkAuthSessionUseCase) private var checkAuthSessionUseCase
 
     var isDeleteConfirmed: Bool { deleteConfirmText == "회원탈퇴" }
     var isShowingDeleteSheet: Bool {
@@ -40,7 +42,18 @@ public final class MyPageViewModel {
         return url
     }
 
-    public init() {}
+    public init() {
+        isAuthenticated = checkAuthSessionUseCase.execute()
+    }
+
+    func onAppear() {
+        Task { [weak self] in
+            guard let self else { return }
+            for await state in authSessionRepository.stateStream() {
+                isAuthenticated = (state == .authenticated)
+            }
+        }
+    }
 
     func privacyTapped() {
         destination = .privacyWebView
