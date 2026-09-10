@@ -3,27 +3,31 @@ import SwiftUI
 import DesignSystem
 
 struct SplashContentView: View {
+    private let markSize: CGFloat = 156
+    private let markCornerRadiusRatio: CGFloat = 0.2237
+
     var body: some View {
         VStack(spacing: 0) {
-            DesignSystemAsset.splashBook.swiftUIImage
+            DesignSystemAsset.splashMark.swiftUIImage
                 .resizable()
                 .scaledToFit()
-                .frame(width: 188, height: 213.6)
+                .frame(width: markSize, height: markSize)
+                .clipShape(RoundedRectangle(cornerRadius: markSize * markCornerRadiusRatio, style: .continuous))
                 .accessibilityHidden(true)
 
             Text("3초 단어")
-                .font(DesignSystemFontFamily.Pretendard.extraBold.swiftUIFont(size: 40))
-                .kerning(-1.8)
-                .foregroundStyle(DesignSystemAsset.growDeep.swiftUIColor)
-                .padding(.top, 36)
+                .font(DesignSystemFontFamily.Pretendard.extraBold.swiftUIFont(size: 30))
+                .kerning(-1.26)
+                .foregroundStyle(DesignSystemAsset.fgStrong.swiftUIColor)
+                .padding(.top, 15)
 
-            Text("한 장씩, 한 단어씩")
-                .font(DesignSystemFontFamily.Pretendard.regular.swiftUIFont(size: 15))
-                .kerning(-0.15)
-                .foregroundStyle(DesignSystemAsset.growDeep.swiftUIColor.opacity(0.66))
+            Text("하루 3초, 단어 한 입")
+                .font(DesignSystemFontFamily.Pretendard.semiBold.swiftUIFont(size: 15))
+                .kerning(-0.1875)
+                .foregroundStyle(DesignSystemAsset.splashTagline.swiftUIColor)
                 .padding(.top, 12)
         }
-        .padding(.horizontal, 32)
+        .padding(.horizontal, 48)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

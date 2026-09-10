@@ -5,7 +5,7 @@ import DesignSystem
 struct SplashView: View {
     var body: some View {
         ZStack {
-            DesignSystemAsset.splashBackground.swiftUIColor
+            DesignSystemAsset.white.swiftUIColor
                 .ignoresSafeArea()
 
             SplashContentView()
