@@ -55,6 +55,7 @@ public struct MyPageView: View {
             viewModel.alertButtonTapped(action)
         }
         .tint(DesignSystemAsset.white.swiftUIColor)
+        .task { viewModel.onAppear() }
     }
 }
 

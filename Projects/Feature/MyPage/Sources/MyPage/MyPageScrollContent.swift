@@ -16,7 +16,9 @@ struct MyPageScrollContent: View {
 
                 Spacer(minLength: 40)
 
-                MyPageActionsView(onLogoutTapped: viewModel.logoutTapped, onDeleteAccountTapped: viewModel.deleteAccountTapped)
+                if viewModel.isAuthenticated {
+                    MyPageActionsView(onLogoutTapped: viewModel.logoutTapped, onDeleteAccountTapped: viewModel.deleteAccountTapped)
+                }
             }
             .frame(maxWidth: .infinity)
             .containerRelativeFrame(.vertical, alignment: .top)

@@ -4,7 +4,6 @@ import Core
 import Data
 import Domain
 import DomainInterface
-import FeatureLogin
 import Networking
 import NetworkingInterface
 
@@ -18,6 +17,7 @@ struct RootView: View {
     @State private var viewModel = withDependencies {
         $0.checkAuthSessionUseCase = .liveValue
         $0.refreshAuthSessionUseCase = .liveValue
+        $0.signInWithAppleUseCase = .liveValue
         $0.completeLessonUseCase = .liveValue
         $0.authSessionRepository = .liveValue
         $0.authRepository = .liveValue
@@ -40,19 +40,10 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if viewModel.isCheckingSession || viewModel.isSeedingDatabase {
+            if viewModel.isSeedingDatabase {
                 SplashView()
             } else {
-                switch viewModel.authState {
-                case .unauthenticated:
-                    LoginView(viewModel: withDependencies {
-                        $0.signInWithAppleUseCase = .liveValue
-                    } operation: {
-                        LoginViewModel()
-                    })
-                case .authenticated:
-                    MainTabView()
-                }
+                MainTabView()
             }
         }
         .task { viewModel.onAppear() }
