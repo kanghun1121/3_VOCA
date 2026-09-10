@@ -80,6 +80,7 @@ shrimp_data/
 .harness/plans/
 .harness/exec-plans/
 .harness/problems/
+.harness/handoff/
 
 ### 시크릿 ###
 Projects/Core/Example/Secrets.xcconfig
