@@ -10,6 +10,12 @@ struct MyPageScrollContent: View {
             VStack(spacing: 0) {
                 MyPageHeaderView()
 
+                LoginStatusCardView(
+                    isAuthenticated: viewModel.isAuthenticated,
+                    onAppleRequest: viewModel.appleLoginRequested,
+                    onAppleCompletion: viewModel.appleLoginCompleted
+                )
+
                 MyPageMenuView(
                     onPrivacyTapped: viewModel.privacyTapped
                 )

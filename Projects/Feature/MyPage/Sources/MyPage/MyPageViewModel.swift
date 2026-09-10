@@ -1,9 +1,13 @@
+import AuthenticationServices
 import Foundation
+import OSLog
 
 import DomainInterface
 
 import Dependencies
 import SwiftUINavigation
+
+private let logger = Logger(subsystem: "com.kangdev.FiveVoca", category: "Auth")
 
 @Observable
 @MainActor
@@ -24,6 +28,7 @@ public final class MyPageViewModel {
     var isAuthenticated = false
     @ObservationIgnored @Dependency(\.authSessionRepository) private var authSessionRepository
     @ObservationIgnored @Dependency(\.checkAuthSessionUseCase) private var checkAuthSessionUseCase
+    @ObservationIgnored @Dependency(\.signInWithAppleUseCase) private var signInWithAppleUseCase
 
     var isDeleteConfirmed: Bool { deleteConfirmText == "회원탈퇴" }
     var isShowingDeleteSheet: Bool {
@@ -52,6 +57,28 @@ public final class MyPageViewModel {
             for await state in authSessionRepository.stateStream() {
                 isAuthenticated = (state == .authenticated)
             }
+        }
+    }
+
+    func appleLoginRequested(_ request: ASAuthorizationAppleIDRequest) {
+        request.requestedScopes = [.fullName, .email]
+    }
+
+    func appleLoginCompleted(_ result: Result<ASAuthorization, any Error>) {
+        switch result {
+        case .success(let authorization):
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                  let tokenData = credential.identityToken,
+                  let identityToken = String(data: tokenData, encoding: .utf8) else { return }
+            Task {
+                do {
+                    _ = try await signInWithAppleUseCase.execute(identityToken)
+                } catch {
+                    logger.error("signInWithApple 실패: \(error.localizedDescription)")
+                }
+            }
+        case .failure(let error):
+            logger.error("Apple 로그인 실패: \(error.localizedDescription)")
         }
     }
 
