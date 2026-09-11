@@ -5,7 +5,7 @@ enum LocalDatabaseSchema {
     static func makeContainer() -> ModelContainer {
         // 번들 시드가 유일한 데이터 원본이라 CloudKit 동기화 대상이 아니다.
         let configuration = ModelConfiguration(cloudKitDatabase: .none)
-        let schema = Schema(versionedSchema: LocalDatabaseSchemaV2.self)
+        let schema = Schema(versionedSchema: LocalDatabaseSchemaV3.self)
 
         if let container = try? ModelContainer(
             for: schema,
@@ -36,6 +36,6 @@ enum LocalDatabaseSchema {
         // 조용히 폴백하기보다 즉시 실패해 원인을 바로 드러내는 편이 낫다. 마이그레이션 대상이
         // 될 기존 스토어가 없는 새 in-memory 컨테이너라 migrationPlan은 필요 없다.
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try! ModelContainer(for: Schema(versionedSchema: LocalDatabaseSchemaV2.self), configurations: configuration)
+        return try! ModelContainer(for: Schema(versionedSchema: LocalDatabaseSchemaV3.self), configurations: configuration)
     }
 }

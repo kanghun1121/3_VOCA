@@ -37,6 +37,10 @@ struct ChatBotContentView: View {
                 LazyVStack(alignment: .leading, spacing: 12) {
                     ChatBotContextCardView(context: viewModel.context)
 
+                    if viewModel.isHistoryLoadFailed {
+                        historyLoadFailedRow
+                    }
+
                     ForEach(viewModel.messages) { message in
                         let isLastMessage = message.id == viewModel.messages.last?.id
 
@@ -46,7 +50,12 @@ struct ChatBotContentView: View {
                         )
                         .id(message.id)
                         .frame(
-                            minHeight: isLastMessage && message.role == .assistant
+                            // 히스토리로 불러온 메시지는 제외한다 — 그렇지 않으면 마지막
+                            // 메시지가 하필 assistant일 때(흔한 경우) 이미 다 끝난 대화
+                            // 아래에 뷰포트 높이만큼의 빈 공간이 남아 입력바 위로 붕 뜬
+                            // 것처럼 보인다. 이 예약은 "방금 보낸 질문 아래 응답 자리"를
+                            // 위한 것으로, 이번 세션에서 실제로 전송한 메시지에만 해당한다.
+                            minHeight: isLastMessage && message.role == .assistant && !message.isFromHistory
                                 ? chatAreaHeight
                                 : nil,
                             alignment: .top
@@ -72,10 +81,21 @@ struct ChatBotContentView: View {
                 isScrolledToBottom = isAtBottom
             }
             .onChange(of: viewModel.messages.count) {
+                // 히스토리 로드도 messages.count를 바꾸므로, 전송 중(isStreaming)이 아니면
+                // 이 핸들러는 조용히 넘어간다 — 로드 완료 스크롤(아래 hasLoadedHistory 핸들러)과
+                // 경쟁하지 않기 위함. didTapSend()는 메시지를 append하기 전에 isStreaming을
+                // true로 세우므로, 전송 시점엔 이 값이 항상 true다.
+                guard viewModel.isStreaming else { return }
                 guard let lastUserMessageID = viewModel.messages.last(where: { $0.role == .user })?.id else { return }
                 withAnimation(.easeOut(duration: 0.25)) {
                     proxy.scrollTo(lastUserMessageID, anchor: .top)
                 }
+            }
+            .onChange(of: viewModel.hasLoadedHistory) {
+                guard viewModel.hasLoadedHistory else { return }
+                // 화면에 처음 들어왔을 때 대화가 스르륵 움직이며 나타나는 건 부자연스러워
+                // 애니메이션 없이 즉시 맨 아래로 이동한다(전송 시의 애니메이션과 다르게 처리).
+                proxy.scrollTo(Self.bottomAnchorID, anchor: .bottom)
             }
             .overlay(alignment: .bottom) {
                 if !isScrolledToBottom {
@@ -113,6 +133,26 @@ struct ChatBotContentView: View {
                 .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("최하단으로 이동")
+    }
+
+    /// 히스토리 조회 실패 시 콘텍스트 카드 바로 아래 보여주는 인라인 재시도 안내
+    /// (swiftui-pro 리뷰: 이전엔 실패해도 화면엔 아무 표시가 없었다).
+    private var historyLoadFailedRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle")
+                .foregroundStyle(DesignSystemAsset.fgMuted.swiftUIColor)
+            Text("이전 대화를 불러오지 못했어요")
+                .font(DesignSystemFontFamily.Pretendard.medium.swiftUIFont(size: 13))
+                .foregroundStyle(DesignSystemAsset.fgMuted.swiftUIColor)
+            Spacer()
+            Button("다시 시도", action: viewModel.didTapRetryHistoryLoad)
+                .font(DesignSystemFontFamily.Pretendard.semiBold.swiftUIFont(size: 13))
+                .foregroundStyle(DesignSystemAsset.study300.swiftUIColor)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(DesignSystemAsset.bgSubtle.swiftUIColor, in: .rect(cornerRadius: 12))
     }
 
     private var inputBar: some View {
