@@ -39,6 +39,7 @@ struct ChatBotExampleApp: App {
 /// Figma 디자인과 대조할 수 있게 한다.
 private struct ChatBotPushDemoView: View {
     private static let context = ChatBotContext(
+        wordID: "word_766",
         term: "address",
         sentence: "Please write your home address on this form.",
         levelLabel: "초급"
