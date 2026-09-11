@@ -18,4 +18,8 @@ struct ChatBotMessage: Identifiable, Equatable {
     /// 이 플래그를 켜므로, 두 플래그가 동시에 true인 경우는 없다. 다음 전송 시작 시
     /// 히스토리에서 제거된다(계속 남는 정상 응답과 다름).
     var isError: Bool = false
+    /// 히스토리 로드로 채워진 메시지인지 — 방금 보낸 메시지와 구분해, 뷰가 "전송 중
+    /// 응답 자리 예약"(뷰포트 높이만큼의 minHeight) 같은 라이브 전송 전용 연출을
+    /// 히스토리 메시지에는 적용하지 않도록 한다.
+    var isFromHistory: Bool = false
 }

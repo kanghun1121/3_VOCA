@@ -16,6 +16,12 @@ public final class ChatBotViewModel {
     private(set) var messages: [ChatBotMessage] = []
     private(set) var isStreaming: Bool = false
     private(set) var isShowingLoginRequiredPopup = false
+    /// 히스토리 조회 성공 시에만 true로 세운다 — 실패하면 다음 onAppear에서 자연스럽게
+    /// 재시도되게 하기 위함. View가 이 전환(false→true)을 감지해 맨 아래로 스크롤한다.
+    private(set) var hasLoadedHistory = false
+    /// 히스토리 조회가 실패했는지 — View가 이 값을 보고 재시도 안내를 보여준다. 콘솔 로그만
+    /// 남기고 화면엔 아무 표시도 없던 걸 개선했다(swiftui-pro 리뷰).
+    private(set) var isHistoryLoadFailed = false
 
     @ObservationIgnored @Dependency(\.chatRepository) private var chatRepository
     @ObservationIgnored @Dependency(\.checkAuthSessionUseCase) private var checkAuthSessionUseCase
@@ -25,7 +31,7 @@ public final class ChatBotViewModel {
     @ObservationIgnored private(set) var streamTask: Task<Void, Never>?
 
     /// 단어 하나가 공개된 뒤 다음 단어로 넘어가기 전 대기 시간. 이 값이 클수록 타이핑 효과가 느려진다.
-    private static let wordRevealDelay: Duration = .milliseconds(50)
+    private static let wordRevealDelay: Duration = .milliseconds(10)
 
     public init(context: ChatBotContext) {
         self.context = context
@@ -56,7 +62,7 @@ public final class ChatBotViewModel {
 
         streamTask = Task {
             do {
-                for try await chunk in chatRepository.streamMessage(message) {
+                for try await chunk in chatRepository.streamMessage(message, context.wordID) {
                     // 청크 하나를 통째로 붙이면 그 안의 여러 단어가 한 프레임에 동시 등장한다.
                     // 단어 경계로 쪼개 하나씩 붙이고, 다음 단어로 넘어가기 전 wordRevealDelay만큼
                     // 대기해 타이핑처럼 천천히 펼쳐지게 한다.
@@ -100,8 +106,51 @@ public final class ChatBotViewModel {
         streamTask?.cancel()
     }
 
-    func onAppear() {
+    func onAppear() async {
         isShowingLoginRequiredPopup = !checkAuthSessionUseCase.execute()
+        guard !isShowingLoginRequiredPopup, !hasLoadedHistory else { return }
+
+        isHistoryLoadFailed = false
+        do {
+            // 로컬 캐시가 먼저 emit되고, 서버 조회가 끝나면 그 결과가 이어서 emit된다(서브플랜 9).
+            for try await history in chatRepository.fetchHistory(context.wordID) {
+                apply(history)
+            }
+            hasLoadedHistory = true
+        } catch {
+            // 새 화면 자체는 정상 동작해야 하므로 팝업 같은 걸로 막지 않는다 — 대신
+            // isHistoryLoadFailed로 View가 인라인 재시도 안내를 보여준다(swiftui-pro 리뷰:
+            // 이전엔 print만 하고 화면엔 아무 표시가 없어 사용자가 원인을 알 수 없었다).
+            // hasLoadedHistory를 세우지 않으므로 재시도가 다시 시도된다.
+            print("[ChatBot] 히스토리 로드 실패:", error)
+            isHistoryLoadFailed = true
+        }
+    }
+
+    /// 히스토리 로드 실패 안내의 "다시 시도" 버튼 탭 시 호출.
+    func didTapRetryHistoryLoad() {
+        Task { await onAppear() }
+    }
+
+    /// `ChatHistory.messages`는 이미 매핑 계층(`ChatHistoryResponseDTO+Mapping.swift`)에서
+    /// conversation 단위를 평탄화해 서버가 준 순서 그대로 내려온다 — 여기서 다시 정렬하지
+    /// 않는다(서버가 순서를 보장하므로 클라이언트 재검증은 2중 작업). `fetchHistory`가 로컬→서버
+    /// 순으로 2번 emit할 수 있어(서브플랜 9), 매번 이전 히스토리 태그 행을 지우고 새로 끼워
+    /// 넣는다 — 그렇지 않으면 로컬 스냅샷 위에 서버 스냅샷이 또 추가돼 중복된다. 맨 뒤가 아니라
+    /// 맨 앞에 끼워 넣는 이유: onAppear는 비동기라 로드가 끝나기 전에 사용자가 이미 메시지를
+    /// 보냈을 수 있는데, 그 경우 통째로 덮어쓰면 방금 보낸 메시지가 사라진다(`isFromHistory ==
+    /// false`인 실시간 메시지는 `removeAll`이 건드리지 않아 안전하다).
+    private func apply(_ history: ChatHistory) {
+        messages.removeAll(where: \.isFromHistory)
+        let loadedMessages = history.messages.map { message -> ChatBotMessage in
+            let role: ChatBotMessage.Role
+            switch message.role {
+            case .user: role = .user
+            case .assistant: role = .assistant
+            }
+            return ChatBotMessage(role: role, text: message.content, isFromHistory: true)
+        }
+        messages.insert(contentsOf: loadedMessages, at: 0)
     }
 
     func appleLoginRequested(_ request: ASAuthorizationAppleIDRequest) {

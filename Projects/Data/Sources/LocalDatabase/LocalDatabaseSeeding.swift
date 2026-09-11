@@ -16,7 +16,12 @@ extension LocalDatabaseSeeding: DependencyKey {
     // 테스트에서 격리를 위해 리셋할 수 있도록 internal로 둔다(모듈 밖으로는 노출 안 됨).
     // #106에서 v1 → v2로 올렸다: 스키마 마이그레이션(LocalDatabaseMigrationPlan) 후
     // WordEntity.meanings/LessonEntity.orderedWordIDs가 비어 있으므로 재시딩이 필요하다.
-    static let seededFlagKey = "localDatabase.seeded.v2"
+    // 서브플랜 9에서 v2 → v3로 다시 올렸다: 이 플래그는 SwiftData 스토어 파일과 무관하게
+    // UserDefaults에 남아 있어서, ChatHistoryEntity를 V2에 직접 추가했던 실수 때문에
+    // 마이그레이션이 실패 → 스토어가 지워지고 재생성됐는데도 이 플래그만 true로 남아 재시딩이
+    // 스킵되는 회귀가 실제로 발생했다(Lesson이 하나도 안 보임, 2026-09-11). 버전 문자열을
+    // 새로 바꿔 모든 기기가 이번 업데이트에서 무조건 한 번 재시딩하도록 강제한다.
+    static let seededFlagKey = "localDatabase.seeded.v3"
 
     public static let liveValue = LocalDatabaseSeeding(seedIfNeeded: {
         guard !UserDefaults.standard.bool(forKey: Self.seededFlagKey) else { return }

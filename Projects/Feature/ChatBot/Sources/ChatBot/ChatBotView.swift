@@ -33,7 +33,7 @@ public struct ChatBotView: View {
             }
         }
         .animation(.spring(response: 0.4, dampingFraction: 0.85), value: viewModel.isShowingLoginRequiredPopup)
-        .onAppear { viewModel.onAppear() }
+        .task { await viewModel.onAppear() }
         .onDisappear { viewModel.onDisappear() }
         .toolbar(.hidden, for: .tabBar)
     }
