@@ -18,7 +18,10 @@ public struct SSEClient: SSEClienting {
         self.frameReader = frameReader
     }
 
-    public func stream(_ requestable: any Requestable) -> AsyncThrowingStream<SSEFrame, Error> {
+    public func stream(
+        _ requestable: any Requestable,
+        onResponse: (@Sendable (HTTPURLResponse) -> Void)?
+    ) -> AsyncThrowingStream<SSEFrame, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
                 let logger = NetworkLogger()
@@ -44,6 +47,8 @@ public struct SSEClient: SSEClienting {
                         )
                         return
                     }
+
+                    onResponse?(httpResponse)
 
                     var reader = frameReader
 
