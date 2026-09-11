@@ -6,6 +6,8 @@ import Foundation
 /// 필요한 값만 좁혀서 받는다 — ChatBot이 `WordDetail`의 정의/발음/전체 예문 배열까지 알 이유가
 /// 없기 때문이다.
 public struct ChatBotContext: Equatable, Sendable {
+    /// 대상 단어의 식별자(예: "word_766"). 서버에 어떤 단어에 대한 대화인지 알리는 데 쓰인다.
+    public let wordID: String
     /// 하이라이트할 대상 단어(예: "address").
     public let term: String
     /// 대상 단어가 포함된 예문 문장.
@@ -14,10 +16,12 @@ public struct ChatBotContext: Equatable, Sendable {
     public let levelLabel: String
 
     public init(
+        wordID: String,
         term: String,
         sentence: String,
         levelLabel: String
     ) {
+        self.wordID = wordID
         self.term = term
         self.sentence = sentence
         self.levelLabel = levelLabel

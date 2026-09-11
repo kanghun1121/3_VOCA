@@ -63,6 +63,7 @@ final class WordDetailViewModelTests: XCTestCase {
             XCTFail("destination이 .chatBot이어야 합니다. 실제: \(String(describing: vm.destination))")
             return
         }
+        XCTAssertEqual(chatBotVM.context.wordID, pm.id)
         XCTAssertEqual(chatBotVM.context.term, "dark")
         XCTAssertEqual(chatBotVM.context.sentence, pm.examples[0].en)
         XCTAssertEqual(chatBotVM.context.levelLabel, "Level 1")

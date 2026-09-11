@@ -46,6 +46,7 @@ struct ChatBotContextCardView: View {
 
 #Preview("ChatBotContextCard") {
     ChatBotContextCardView(context: .init(
+        wordID: "word_766",
         term: "address",
         sentence: "Please write your home address on this form.",
         levelLabel: "초급"

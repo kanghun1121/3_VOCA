@@ -42,6 +42,7 @@ public struct ChatBotView: View {
 #Preview("챗봇") {
     NavigationStack {
         ChatBotView(viewModel: ChatBotViewModel(context: .init(
+            wordID: WordDetail.previewFixture.id,
             term: WordDetail.previewFixture.term,
             sentence: WordDetail.previewFixture.examples[0].en,
             levelLabel: "초급"

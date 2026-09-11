@@ -65,6 +65,7 @@ public final class WordDetailViewModel {
 
     func didTapChatBot(state: WordDetail, example: WordDetail.Example) {
         destination = .chatBot(ChatBotViewModel(context: .init(
+            wordID: state.id,
             term: state.term,
             sentence: example.en,
             levelLabel: "Level \(state.level)"
