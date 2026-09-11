@@ -75,8 +75,9 @@ public final class ChatBotViewModel {
                     }
                 }
             } catch {
-                // 사용자가 직접 멈춘 건 실패가 아니다 — 조용히 끝내고 받은 텍스트를 남긴다.
-                // CancellationError는 취소된 태스크에서만 나오므로 Task.isCancelled 하나로 충분하다.
+                // 화면 이탈(onDisappear)로 로컬 Task가 직접 취소된 경우는 실패가 아니다 — 조용히
+                // 끝내고 받은 텍스트를 남긴다. 정지 버튼(didTapStop)은 더 이상 이 Task를 취소하지
+                // 않으므로(서브플랜 10), 여기 걸리는 취소는 사실상 onDisappear뿐이다.
                 if !Task.isCancelled {
                     print("[ChatBot] 스트리밍 실패:", error)
                     // 이미 받은 부분 응답이 있어도 실패 문구로 대체한다 — 어중간하게
@@ -95,14 +96,24 @@ public final class ChatBotViewModel {
         }
     }
 
-    /// 취소 버튼 탭 시 호출 — 진행 중인 스트림 Task를 취소한다. `isStreaming`은 여기서
-    /// 내리지 않는다: 취소된 Task의 종료 처리(위 didTapSend의 do/catch 이후)가 끝난 뒤
-    /// 내려야, 정리되기 전에 새 전송이 시작돼 두 스트림이 겹치는 일이 없다.
-    func didTapCancel() {
-        streamTask?.cancel()
+    /// 정지 버튼 탭 시 호출(서브플랜 10, 구 `didTapCancel`) — 로컬 스트림 `Task`는 취소하지
+    /// 않는다. 대신 서버에 `/chat-stop`으로 정지를 요청하고, 서버가 지금까지 생성한 내용을
+    /// 마저 SSE로 흘려보낸 뒤 스스로 스트림을 닫을 때까지 `didTapSend()`의 루프가 계속
+    /// 소비한다 — 그 동안 화면에도 계속 반영된다(사용자 확정 UX: 드레인 중에도 타이핑
+    /// 애니메이션이 자연스럽게 이어지다 멈춘다). 어떤 전송을 멈출지(sse_id)는 이 ViewModel이
+    /// 몰라도 된다 — `context.wordID`만 넘기면 Data 레이어(`ChatSessionStore`)가 알아서
+    /// 찾는다. stop 요청 실패는 best-effort로 무시한다 — idempotent라 이미 끝난 스트림에
+    /// 보내도 문제없고, 실패해도 스트림 자체는 정상 진행/종료된다.
+    func didTapStop() {
+        Task { try? await chatRepository.stopStreaming(context.wordID) }
     }
 
+    /// 화면을 벗어나면 더 이상 화면에 보여줄 이유가 없으므로 로컬 Task는 즉시 취소한다(정지
+    /// 버튼과 달리 드레인까지 기다리지 않음). 서버 쪽 생성도 계속 이어갈 이유가 없어 함께
+    /// `/chat-stop`을 호출한다(사용자에게 확인 안 된 가정 — 필요시 조정 가능). 진행 중인
+    /// 전송이 없어도 안전하다 — Data 레이어가 조용히 무시한다.
     func onDisappear() {
+        Task { try? await chatRepository.stopStreaming(context.wordID) }
         streamTask?.cancel()
     }
 

@@ -159,10 +159,10 @@ struct ChatBotContentView: View {
         ChatBotInputBar(
             placeholder: "\(viewModel.context.term)에 대해 물어보세요",
             text: $viewModel.input,
-            state: viewModel.isStreaming ? .cancel : .send(isEnabled: viewModel.canSend),
+            state: viewModel.isStreaming ? .stop : .send(isEnabled: viewModel.canSend),
             isFocused: $isInputFocused,
             onSend: { viewModel.didTapSend() },
-            onCancel: { viewModel.didTapCancel() }
+            onStop: { viewModel.didTapStop() }
         )
         .padding(.horizontal, 16)
         .padding(.top, 10)

@@ -17,7 +17,10 @@ public enum SSEClientKey: TestDependencyKey {
 }
 
 private struct NoopSSEClient: SSEClienting {
-    func stream(_ requestable: any Requestable) -> AsyncThrowingStream<SSEFrame, Error> {
+    func stream(
+        _ requestable: any Requestable,
+        onResponse: (@Sendable (HTTPURLResponse) -> Void)?
+    ) -> AsyncThrowingStream<SSEFrame, Error> {
         AsyncThrowingStream { $0.finish() }
     }
 }
