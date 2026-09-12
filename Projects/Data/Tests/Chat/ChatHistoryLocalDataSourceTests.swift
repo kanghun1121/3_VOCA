@@ -16,8 +16,8 @@ final class ChatHistoryLocalDataSourceTests: XCTestCase {
     func test_저장_후_조회하면_저장한_순서_그대로_반환한다() async throws {
         let db = LocalDatabaseTestContext()
         let payloads = [
-            ChatMessagePayload(id: 1, role: "user", content: "질문"),
-            ChatMessagePayload(id: 2, role: "assistant", content: "답변"),
+            ChatMessagePayload(role: "user", content: "질문"),
+            ChatMessagePayload(role: "assistant", content: "답변"),
         ]
 
         try await db.run {
@@ -27,16 +27,15 @@ final class ChatHistoryLocalDataSourceTests: XCTestCase {
             try await ChatHistoryLocalDataSource().messages(wordID: "word_001")
         }
 
-        XCTAssertEqual(messages.map(\.id), [1, 2])
         XCTAssertEqual(messages.map(\.content), ["질문", "답변"])
     }
 
     func test_같은_wordID로_다시_저장하면_이전_내용이_아니라_완전히_교체된다() async throws {
         let db = LocalDatabaseTestContext()
-        let firstSave = [ChatMessagePayload(id: 1, role: "user", content: "첫 질문")]
+        let firstSave = [ChatMessagePayload(role: "user", content: "첫 질문")]
         let secondSave = [
-            ChatMessagePayload(id: 1, role: "user", content: "첫 질문"),
-            ChatMessagePayload(id: 2, role: "assistant", content: "첫 답변"),
+            ChatMessagePayload(role: "user", content: "첫 질문"),
+            ChatMessagePayload(role: "assistant", content: "첫 답변"),
         ]
 
         try await db.run {
@@ -48,8 +47,7 @@ final class ChatHistoryLocalDataSourceTests: XCTestCase {
             try await ChatHistoryLocalDataSource().messages(wordID: "word_001")
         }
 
-        // "첫 질문"이 중복으로 남지 않고, 두 번째 save가 준 배열로 정확히 교체됐어야 한다.
-        XCTAssertEqual(messages.map(\.id), [1, 2])
+        XCTAssertEqual(messages.map(\.content), ["첫 질문", "첫 답변"])
     }
 
     func test_다른_wordID의_데이터는_섞이지_않는다() async throws {
@@ -57,8 +55,8 @@ final class ChatHistoryLocalDataSourceTests: XCTestCase {
 
         try await db.run {
             let dataSource = ChatHistoryLocalDataSource()
-            try await dataSource.save(wordID: "word_001", messages: [ChatMessagePayload(id: 1, role: "user", content: "word_001 질문")])
-            try await dataSource.save(wordID: "word_002", messages: [ChatMessagePayload(id: 2, role: "user", content: "word_002 질문")])
+            try await dataSource.save(wordID: "word_001", messages: [ChatMessagePayload(role: "user", content: "word_001 질문")])
+            try await dataSource.save(wordID: "word_002", messages: [ChatMessagePayload(role: "user", content: "word_002 질문")])
         }
 
         let word1Messages = try await db.run { try await ChatHistoryLocalDataSource().messages(wordID: "word_001") }

@@ -7,12 +7,12 @@ extension ChatMessagePayload {
         guard let parsedRole = ChatHistory.Message.Role(rawValue: role) else {
             throw ChatHistoryMappingError.invalidRole(role)
         }
-        return ChatHistory.Message(id: id, role: parsedRole, content: content)
+        return ChatHistory.Message(role: parsedRole, content: content)
     }
 }
 
 extension ChatHistory.Message {
     var asPayload: ChatMessagePayload {
-        ChatMessagePayload(id: id, role: role.rawValue, content: content)
+        ChatMessagePayload(role: role.rawValue, content: content)
     }
 }
